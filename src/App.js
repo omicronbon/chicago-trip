@@ -1,23 +1,12 @@
-import logo from './logo.svg';
+// App.js — the root of our app. For now it just shows the trip itinerary.
+import React from 'react';
 import './App.css';
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <h1>Chicago Trip 🌆</h1>
+      <p>April 17–20, 2026</p>
     </div>
   );
 }
