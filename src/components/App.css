@@ -1,0 +1,224 @@
+/* App.css
+   Mobile-first styles for the Chicago trip app.
+   Designed to be readable at a glance while walking around a city.
+   Touch targets are at least 44px for easy tapping. */
+
+/* ---- Reset & Base ---- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 0 0 80px; /* Extra bottom padding so last card isn't cut off */
+}
+
+/* ---- Header ---- */
+.app-header {
+  text-align: center;
+  padding: 24px 16px 8px;
+}
+
+.app-header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.5px;
+}
+
+.trip-dates {
+  font-size: 14px;
+  color: #8888aa;
+  margin-top: 4px;
+}
+
+/* ---- Day Tabs ---- */
+.day-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 12px 16px;
+  overflow-x: auto;          /* Scrolls if there are many days */
+  -webkit-overflow-scrolling: touch;
+}
+
+.day-tab {
+  flex: 1;
+  min-width: 70px;
+  padding: 10px 4px;
+  border: none;
+  border-radius: 10px;
+  background: #2a2a40;
+  color: #aaaacc;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  /* 44px minimum touch target */
+  min-height: 44px;
+}
+
+.day-tab.active {
+  background: #4a6cf7;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(74, 108, 247, 0.35);
+}
+
+/* ---- Day Heading ---- */
+.day-heading {
+  font-size: 18px;
+  font-weight: 600;
+  color: #ccccee;
+  padding: 8px 16px 4px;
+}
+
+/* ---- Activity List ---- */
+.activity-list {
+  padding: 4px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ---- Activity Card ---- */
+.activity-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border-radius: 10px;
+  background: #2a2a40;
+  /* Left border shows the category color */
+  border-left: 4px solid #888;
+  transition: opacity 0.2s ease;
+}
+
+/* When an activity is checked off, dim it */
+.activity-card.completed {
+  opacity: 0.45;
+}
+
+.activity-card.completed .activity-title,
+.activity-card.completed .activity-time {
+  text-decoration: line-through;
+}
+
+.activity-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex: 1;
+  min-width: 0; /* Prevents flex children from overflowing */
+}
+
+/* ---- Checkbox button ---- */
+.check-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 2px;
+  min-width: 28px;
+  min-height: 44px; /* Touch target */
+  display: flex;
+  align-items: center;
+}
+
+/* ---- Activity content (time, title, notes) ---- */
+.activity-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.activity-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.activity-time {
+  font-size: 13px;
+  font-weight: 700;
+  color: #8888bb;
+  white-space: nowrap;
+}
+
+.activity-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #eeeeff;
+}
+
+.activity-notes {
+  font-size: 12px;
+  color: #8888aa;
+  margin-top: 3px;
+  line-height: 1.4;
+}
+
+/* ---- Navigate button ---- */
+.nav-btn {
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  padding: 4px 4px 4px 8px;
+  min-width: 44px;  /* Touch target */
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+
+.nav-btn:active {
+  opacity: 1;
+}
+
+/* ---- Overflow / If Time Permits ---- */
+.overflow-section {
+  margin: 20px 12px;
+  padding: 16px;
+  background: #22223a;
+  border-radius: 10px;
+  border: 1px dashed #444466;
+}
+
+.overflow-section h3 {
+  font-size: 15px;
+  color: #8888bb;
+  margin-bottom: 12px;
+}
+
+.overflow-item {
+  padding: 8px 0;
+  border-bottom: 1px solid #2a2a40;
+}
+
+.overflow-item:last-child {
+  border-bottom: none;
+}
+
+.overflow-item span {
+  font-size: 15px;
+  font-weight: 600;
+  color: #ccccdd;
+}
+
+/* ---- Desktop: slightly wider cards ---- */
+@media (min-width: 600px) {
+  .app {
+    padding: 0 16px 80px;
+  }
+}
