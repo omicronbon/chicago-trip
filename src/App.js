@@ -1,76 +1,116 @@
-// App.js
-// Main app component. Right now it:
-// 1. Loads the Chicago itinerary seed data
-// 2. Tracks which day tab is selected (defaults to Friday)
-// 3. Tracks which activities are checked off (local state for now)
-// 4. Renders the day tabs and activity list
-//
-// Next step: we'll replace local state with Firestore so changes
-// sync in real time between you and your girlfriend's phones.
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { db } from "./firebase";
+import {
+  collection,
+  query,
+  orderBy,
+  onSnapshot,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
 import DayTabs from "./components/DayTabs";
 import ActivityCard from "./components/ActivityCard";
 import chicagoItinerary from "./data/chicagoItinerary";
 import "./App.css";
 
+const TRIP_ID = "chicago-april-2026";
+
 function App() {
-  // Which day tab is currently selected
-  const [selectedDayId, setSelectedDayId] = useState(
-    chicagoItinerary.days[0].id // Default to Friday
-  );
+  const [days, setDays] = useState([]);         // Day metadata (labels, order)
+  const [activities, setActivities] = useState([]); // Activities for selected day
+  const [selectedDayId, setSelectedDayId] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Copy of itinerary data in state so we can toggle "completed"
-  // (Later this gets replaced by Firestore)
-  const [days, setDays] = useState(chicagoItinerary.days);
+  // --- LISTENER 1: Days ---
+  useEffect(() => {
+    const daysQuery = query(
+      collection(db, "trips", TRIP_ID, "days"),
+      orderBy("order")
+    );
 
-  // Find the currently selected day's data
+    const unsubscribe = onSnapshot(daysQuery, (snapshot) => {
+      const daysData = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+      setDays(daysData);
+      setLoading(false);
+
+      if (daysData.length > 0) {
+        setSelectedDayId((prev) => prev || daysData[0].id);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // --- LISTENER 2: Activities for the selected day ---
+  useEffect(() => {
+    if (!selectedDayId) return;
+
+    const activitiesQuery = query(
+      collection(db, "trips", TRIP_ID, "days", selectedDayId, "activities"),
+      orderBy("time")
+    );
+
+    const unsubscribe = onSnapshot(activitiesQuery, (snapshot) => {
+      const acts = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+      setActivities(acts);
+    });
+
+    return () => unsubscribe();
+  }, [selectedDayId]);
+
+  // --- TOGGLE COMPLETE ---
+  async function handleToggleComplete(activityId, currentStatus) {
+    const activityDoc = doc(
+      db, "trips", TRIP_ID, "days", selectedDayId, "activities", activityId
+    );
+    await updateDoc(activityDoc, { completed: !currentStatus });
+  }
+
   const selectedDay = days.find((d) => d.id === selectedDayId);
 
-  // Toggle an activity's completed status
-  function handleToggleComplete(activityId) {
-    setDays((prevDays) =>
-      prevDays.map((day) => ({
-        ...day,
-        activities: day.activities.map((act) =>
-          act.id === activityId
-            ? { ...act, completed: !act.completed }
-            : act
-        ),
-      }))
+  if (loading) {
+    return (
+      <div className="app">
+        <header className="app-header">
+          <h1>Chicago 🌆</h1>
+          <p className="trip-dates">April 17–20, 2026</p>
+        </header>
+        <p style={{ textAlign: "center", marginTop: "2rem" }}>Loading...</p>
+      </div>
     );
   }
 
   return (
     <div className="app">
-      {/* Trip header */}
       <header className="app-header">
         <h1>Chicago 🌆</h1>
         <p className="trip-dates">April 17–20, 2026</p>
       </header>
 
-      {/* Day selector tabs */}
       <DayTabs
         days={days}
         selectedDayId={selectedDayId}
         onSelectDay={setSelectedDayId}
       />
 
-      {/* Full day label */}
-      <h2 className="day-heading">{selectedDay.labelFull}</h2>
+      {selectedDay && (
+        <>
+          <h2 className="day-heading">{selectedDay.label}</h2>
 
-      {/* Activity list for the selected day */}
-      <div className="activity-list">
-        {selectedDay.activities.map((activity) => (
-          <ActivityCard
-            key={activity.id}
-            activity={activity}
-            onToggleComplete={handleToggleComplete}
-          />
-        ))}
-      </div>
+          <div className="activity-list">
+            {activities.map((activity) => (
+              <ActivityCard
+                key={activity.id}
+                activity={activity}
+                onToggleComplete={() =>
+                  handleToggleComplete(activity.id, activity.completed)
+                }
+              />
+            ))}
+          </div>
+        </>
+      )}
 
-      {/* Overflow list — only show on the last day tab */}
       {selectedDayId === "mon-apr-20" && (
         <div className="overflow-section">
           <h3>If Time Permits</h3>
