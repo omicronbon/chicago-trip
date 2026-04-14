@@ -468,3 +468,19 @@ body {
   font-size: 18px;
   color: #8888aa;
 }
+/* Timeline layout */
+.timeline-container {
+  margin-top: 8px;
+  margin-bottom: 80px;
+}
+
+.activity-card {
+  height: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.activity-list {
+  position: relative;
+  padding: 0 8px;
+}

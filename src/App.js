@@ -23,6 +23,7 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import LoginScreen from "./components/LoginScreen";
 import ShareModal from "./components/ShareModal";
 import ActionItems from "./components/ActionItems";
+import TimelineView from "./components/TimelineView";
 
 const TRIP_ID = "chicago-april-2026";
 
@@ -220,22 +221,12 @@ if (!user) {
           <h2 className="day-heading">{selectedDay.labelFull || selectedDay.label}</h2>
 
           <div className="activity-list">
-            {groupedActivities.length === 0 ? (
-              <div className="empty-state">
-                No activities yet. Tap + to add one.
-              </div>
-            ) : (
-              groupedActivities.map((activity) => (
-                <ActivityCard
-                  key={activity.id}
-                  activity={activity}
-                  onToggleComplete={() =>
-                    handleToggleComplete(activity.id, activity.completed)
-                  }
-                  onEdit={() => setModalState(activity)}
-                />
-              ))
-            )}
+            <TimelineView
+              activities={groupedActivities}
+              tripDate={selectedDay.date}
+              onToggleComplete={(id, completed) => handleToggleComplete(id, completed)}
+              onEdit={(activity) => setModalState(activity)}
+            />
           </div>
         </>
       )}
