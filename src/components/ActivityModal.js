@@ -15,7 +15,7 @@ const CATEGORIES = [
   { value: "free", label: "Free Time / Suggestion" },
 ];
 
-function ActivityModal({ activity, onSave, onDelete, onClose }) {
+function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime }) {
   // If `activity` is provided, we're editing. Otherwise, adding.
   const isEditing = !!activity;
 
@@ -29,7 +29,7 @@ function ActivityModal({ activity, onSave, onDelete, onClose }) {
   const [durationMinutes, setDurationMinutes] = useState(60);
 
   // Pre-fill fields when editing an existing activity
-  useEffect(() => {
+ useEffect(() => {
     if (activity) {
       setTitle(activity.title || "");
       setEmoji(activity.emoji || "");
@@ -38,8 +38,10 @@ function ActivityModal({ activity, onSave, onDelete, onClose }) {
       setNotes(activity.notes || "");
       setAddress(activity.address || "");
       setDurationMinutes(activity.durationMinutes || 60);
+    } else if (prefilledTime) {
+      setTime(prefilledTime);
     }
-  }, [activity]);
+  }, [activity, prefilledTime]);
 
   function handleSubmit() {
     if (!title.trim()) return; // Don't save empty titles
@@ -154,7 +156,11 @@ function ActivityModal({ activity, onSave, onDelete, onClose }) {
           {isEditing && (
             <button
               className="modal-btn modal-btn-delete"
-              onClick={() => onDelete(activity.id)}
+              onClick={() => {
+                if (window.confirm("Delete this activity? This can't be undone.")) {
+                  onDelete(activity.id);
+                }
+              }}
             >
               Delete
             </button>

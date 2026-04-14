@@ -1,13 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ActivityCard from "./ActivityCard";
 
-// Converts "17:00" to minutes from midnight (1020)
 function timeToMinutes(time24) {
   const [h, m] = time24.split(":").map(Number);
   return h * 60 + m;
 }
 
-// Converts minutes from midnight to "5:00 PM" format
 function formatHour(minutes) {
   const h = Math.floor(minutes / 60) % 24;
   const period = h >= 12 ? "PM" : "AM";
@@ -15,21 +13,42 @@ function formatHour(minutes) {
   return `${h12} ${period}`;
 }
 
-const HOUR_HEIGHT = 80; // pixels per hour
+const HOUR_HEIGHT = 80;
 
 export default function TimelineView({
   activities,
   tripDate,
   onToggleComplete,
   onEdit,
+  onAddAtTime,
 }) {
   const [now, setNow] = useState(new Date());
+  const scrollRef = useRef(null);
+  const hasScrolled = useRef(false);
 
-  // Update current time every 60 seconds
   useEffect(() => {
     const interval = setInterval(() => setNow(new Date()), 60000);
     return () => clearInterval(interval);
   }, []);
+
+  // Auto-scroll to current time (today) or first activity (other days)
+  useEffect(() => {
+    if (hasScrolled.current || activities.length === 0) return;
+
+    const timer = setTimeout(() => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+        hasScrolled.current = true;
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [activities, tripDate]);
+
+  // Reset scroll flag when day changes
+  useEffect(() => {
+    hasScrolled.current = false;
+  }, [tripDate]);
 
   if (activities.length === 0) {
     return (
@@ -37,7 +56,6 @@ export default function TimelineView({
     );
   }
 
-  // Determine timeline range from activities
   const startMinutes = activities.reduce(
     (min, a) => Math.min(min, timeToMinutes(a.time)),
     Infinity
@@ -47,18 +65,16 @@ export default function TimelineView({
     return Math.max(max, end);
   }, 0);
 
-  // Show full day: 6 AM to midnight (or later if activities run past)
-  const timelineStart = Math.min(Math.floor(startMinutes / 60) * 60, 6 * 60);
+  // Start 1 hour before first activity, end at midnight or later
+  const timelineStart = Math.max(0, Math.floor(startMinutes / 60) * 60 - 60);
   const timelineEnd = Math.max(Math.ceil(endMinutes / 60) * 60, 24 * 60);
   const totalHeight = ((timelineEnd - timelineStart) / 60) * HOUR_HEIGHT;
 
-  // Generate hour labels
   const hours = [];
   for (let m = timelineStart; m <= timelineEnd; m += 60) {
     hours.push(m);
   }
 
-  // Current time indicator
   const isToday =
     tripDate &&
     new Date(tripDate + "T00:00:00").toDateString() === now.toDateString();
@@ -67,12 +83,42 @@ export default function TimelineView({
     isToday && nowMinutes >= timelineStart && nowMinutes <= timelineEnd;
   const nowOffset = ((nowMinutes - timelineStart) / 60) * HOUR_HEIGHT;
 
+  // Determine scroll anchor position
+  const scrollAnchorOffset = isToday && showNowLine
+    ? nowOffset - 100
+    : ((startMinutes - timelineStart) / 60) * HOUR_HEIGHT - 20;
+
+  // Handle clicking on empty timeline space
+  function handleTimelineClick(e) {
+    if (!onAddAtTime) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickY = e.clientY - rect.top;
+    const minutesFromStart = (clickY / HOUR_HEIGHT) * 60;
+    const totalMinutes = timelineStart + minutesFromStart;
+    const roundedMinutes = Math.round(totalMinutes / 15) * 15;
+    const hours = Math.floor(roundedMinutes / 60) % 24;
+    const mins = roundedMinutes % 60;
+    const timeStr = `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}`;
+    onAddAtTime(timeStr);
+  }
+
   return (
     <div
       className="timeline-container"
       style={{ position: "relative", minHeight: `${totalHeight}px`, marginLeft: "60px" }}
+      onClick={handleTimelineClick}
     >
-      {/* Hour grid lines and labels */}
+      {/* Scroll anchor */}
+      <div
+        ref={scrollRef}
+        style={{
+          position: "absolute",
+          top: `${Math.max(0, scrollAnchorOffset)}px`,
+          height: "1px",
+          pointerEvents: "none",
+        }}
+      />
+
       {hours.map((m) => {
         const top = ((m - timelineStart) / 60) * HOUR_HEIGHT;
         return (
@@ -105,7 +151,6 @@ export default function TimelineView({
         );
       })}
 
-      {/* Activity cards positioned on the timeline */}
       {activities.map((activity) => {
         const actStart = timeToMinutes(activity.time);
         const duration = activity.durationMinutes || activity.hourSpan * 60 || 60;
@@ -123,6 +168,7 @@ export default function TimelineView({
               height: `${height - 2}px`,
               zIndex: 1,
             }}
+            onClick={(e) => e.stopPropagation()}
           >
             <ActivityCard
               activity={{
@@ -136,7 +182,6 @@ export default function TimelineView({
         );
       })}
 
-      {/* Current time indicator */}
       {showNowLine && (
         <div
           style={{

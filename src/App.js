@@ -35,6 +35,7 @@ function App() {
   // Modal state: null = closed, "add" = adding, activity object = editing
   const [modalState, setModalState] = useState(null);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [prefilledTime, setPrefilledTime] = useState(null);
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
 
@@ -137,7 +138,8 @@ function App() {
       });
     }
 
-    setModalState(null); // Close modal
+    setModalState(null);
+    setPrefilledTime(null);
   }
 
   // --- DELETE ---
@@ -150,6 +152,13 @@ function App() {
   }
 
   const selectedDay = days.find((d) => d.id === selectedDayId);
+  // Compute progress for current day's activities
+  const dayProgress = {};
+  if (selectedDayId && activities.length > 0) {
+    const total = activities.length;
+    const done = activities.filter((a) => a.completed).length;
+    dayProgress[selectedDayId] = total > 0 ? Math.round((done / total) * 100) : 0;
+  }
 
   // Group "(cont.)" activities into multi-hour blocks
   const groupedActivities = groupActivities(activities);
@@ -199,6 +208,8 @@ if (!user) {
         onSelectDay={setSelectedDayId}
         selectedView={selectedView}
         onSelectView={setSelectedView}
+        tripStartDate="2026-04-17"
+        dayProgress={dayProgress}
       />
 
 {selectedView === "todo" && <ActionItems userId={user.uid} days={days} />}
@@ -224,6 +235,10 @@ if (!user) {
               tripDate={selectedDay.date}
               onToggleComplete={(id, completed) => handleToggleComplete(id, completed)}
               onEdit={(activity) => setModalState(activity)}
+              onAddAtTime={(time) => {
+                setPrefilledTime(time);
+                setModalState("add");
+              }}
             />
           </div>
         </>
@@ -247,9 +262,10 @@ if (!user) {
       {modalState && (
         <ActivityModal
           activity={modalState === "add" ? null : modalState}
+          prefilledTime={prefilledTime}
           onSave={handleSave}
           onDelete={handleDelete}
-          onClose={() => setModalState(null)}
+          onClose={() => { setModalState(null); setPrefilledTime(null); }}
         />
       )}
     </div>
