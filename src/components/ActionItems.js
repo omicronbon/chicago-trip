@@ -14,27 +14,43 @@ import {
 
 const TRIP_ID = "chicago-april-2026";
 
-export default function ActionItems({ userId }) {
+export default function ActionItems({ userId, days }) {
   const [items, setItems] = useState([]);
+  const [overflow, setOverflow] = useState([]);
   const [newTitle, setNewTitle] = useState("");
+  const [newOverflow, setNewOverflow] = useState("");
+  const [scheduleItem, setScheduleItem] = useState(null);
+  const [selectedDayId, setSelectedDayId] = useState("");
+  const [selectedTime, setSelectedTime] = useState("12:00");
+  const [selectedDuration, setSelectedDuration] = useState(60);
 
+  // Listen to action items
   useEffect(() => {
     const q = query(
       collection(db, "trips", TRIP_ID, "actionItems"),
       orderBy("createdAt")
     );
-
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setItems(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })));
     });
-
     return () => unsubscribe();
   }, []);
 
+  // Listen to overflow items
+  useEffect(() => {
+    const unsubscribe = onSnapshot(
+      collection(db, "trips", TRIP_ID, "overflow"),
+      (snapshot) => {
+        setOverflow(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })));
+      }
+    );
+    return () => unsubscribe();
+  }, []);
+
+  // --- Action Items CRUD ---
   async function handleAdd() {
     const trimmed = newTitle.trim();
     if (!trimmed) return;
-
     await addDoc(collection(db, "trips", TRIP_ID, "actionItems"), {
       title: trimmed,
       completed: false,
@@ -42,7 +58,6 @@ export default function ActionItems({ userId }) {
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });
-
     setNewTitle("");
   }
 
@@ -53,8 +68,48 @@ export default function ActionItems({ userId }) {
     });
   }
 
-  async function handleDelete(itemId) {
+  async function handleDeleteItem(itemId) {
     await deleteDoc(doc(db, "trips", TRIP_ID, "actionItems", itemId));
+  }
+
+  // --- Overflow CRUD ---
+  async function handleAddOverflow() {
+    const trimmed = newOverflow.trim();
+    if (!trimmed) return;
+    await addDoc(collection(db, "trips", TRIP_ID, "overflow"), {
+      title: trimmed,
+      emoji: "📌",
+      notes: "",
+    });
+    setNewOverflow("");
+  }
+
+  async function handleDeleteOverflow(itemId) {
+    await deleteDoc(doc(db, "trips", TRIP_ID, "overflow", itemId));
+  }
+
+  // --- Schedule an overflow item to a day ---
+  async function handleSchedule() {
+    if (!selectedDayId || !scheduleItem) return;
+    await addDoc(
+      collection(db, "trips", TRIP_ID, "days", selectedDayId, "activities"),
+      {
+        title: scheduleItem.title,
+        emoji: scheduleItem.emoji || "📌",
+        time: selectedTime,
+        category: "orange",
+        notes: scheduleItem.notes || "",
+        address: "",
+        durationMinutes: Number(selectedDuration),
+        completed: false,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      }
+    );
+    setScheduleItem(null);
+    setSelectedDayId("");
+    setSelectedTime("12:00");
+    setSelectedDuration(60);
   }
 
   const incomplete = items.filter((i) => !i.completed);
@@ -62,6 +117,7 @@ export default function ActionItems({ userId }) {
 
   return (
     <div style={{ padding: "0 16px" }}>
+      {/* ---- ACTION ITEMS ---- */}
       <h2 className="day-heading">Pre-Trip To Do</h2>
 
       <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
@@ -128,7 +184,7 @@ export default function ActionItems({ userId }) {
             {item.title}
           </span>
           <button
-            onClick={() => handleDelete(item.id)}
+            onClick={() => handleDeleteItem(item.id)}
             style={{
               background: "none",
               border: "none",
@@ -167,16 +223,18 @@ export default function ActionItems({ userId }) {
                 onChange={() => handleToggle(item)}
                 style={{ width: "22px", height: "22px", cursor: "pointer" }}
               />
-              <span style={{
-                flex: 1,
-                fontSize: "16px",
-                color: "#888",
-                textDecoration: "line-through",
-              }}>
+              <span
+                style={{
+                  flex: 1,
+                  fontSize: "16px",
+                  color: "#888",
+                  textDecoration: "line-through",
+                }}
+              >
                 {item.title}
               </span>
               <button
-                onClick={() => handleDelete(item.id)}
+                onClick={() => handleDeleteItem(item.id)}
                 style={{
                   background: "none",
                   border: "none",
@@ -190,6 +248,162 @@ export default function ActionItems({ userId }) {
             </div>
           ))}
         </>
+      )}
+
+      {/* ---- IF TIME PERMITS ---- */}
+      <h2 className="day-heading" style={{ marginTop: "32px" }}>
+        If Time Permits
+      </h2>
+
+      <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
+        <input
+          type="text"
+          placeholder="Add a suggestion..."
+          value={newOverflow}
+          onChange={(e) => setNewOverflow(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleAddOverflow()}
+          style={{
+            flex: 1,
+            padding: "12px",
+            borderRadius: "8px",
+            border: "1px solid #444",
+            background: "#1e1e2e",
+            color: "#fff",
+            fontSize: "16px",
+          }}
+        />
+        <button
+          onClick={handleAddOverflow}
+          style={{
+            padding: "12px 18px",
+            borderRadius: "8px",
+            border: "none",
+            background: "#FF9800",
+            color: "white",
+            fontWeight: "bold",
+            fontSize: "16px",
+            cursor: "pointer",
+          }}
+        >
+          Add
+        </button>
+      </div>
+
+      {overflow.length === 0 && (
+        <div className="empty-state">
+          No suggestions yet. Add places or activities you'd do if there's extra time.
+        </div>
+      )}
+
+      {overflow.map((item) => (
+        <div
+          key={item.id}
+          onClick={() => setScheduleItem(item)}
+          style={{
+            padding: "14px",
+            marginBottom: "8px",
+            background: "#2a2a3d",
+            borderRadius: "10px",
+            borderLeft: "4px solid #FF9800",
+            cursor: "pointer",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: "16px", color: "#fff" }}>
+              {item.emoji} {item.title}
+            </span>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <span style={{ fontSize: "12px", color: "#888" }}>Tap to schedule</span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteOverflow(item.id);
+                }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#888",
+                  fontSize: "18px",
+                  cursor: "pointer",
+                }}
+              >
+                ×
+              </button>
+            </div>
+          </div>
+          {item.notes && (
+            <p style={{ fontSize: "14px", color: "#888", margin: "6px 0 0" }}>
+              {item.notes}
+            </p>
+          )}
+        </div>
+      ))}
+
+      {/* ---- SCHEDULE MODAL ---- */}
+      {scheduleItem && (
+        <div className="modal-overlay" onClick={() => setScheduleItem(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h2>Schedule: {scheduleItem.emoji} {scheduleItem.title}</h2>
+
+            <label className="modal-label">
+              Day
+              <select
+                value={selectedDayId}
+                onChange={(e) => setSelectedDayId(e.target.value)}
+                className="modal-input"
+              >
+                <option value="">Choose a day...</option>
+                {days.map((day) => (
+                  <option key={day.id} value={day.id}>
+                    {day.labelFull || day.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="modal-label">
+              Time
+              <input
+                type="time"
+                value={selectedTime}
+                onChange={(e) => setSelectedTime(e.target.value)}
+                className="modal-input modal-input-short"
+              />
+            </label>
+
+            <label className="modal-label">
+              Duration
+              <select
+                value={selectedDuration}
+                onChange={(e) => setSelectedDuration(Number(e.target.value))}
+                className="modal-input"
+              >
+                <option value={30}>30 min</option>
+                <option value={60}>1 hour</option>
+                <option value={90}>1.5 hours</option>
+                <option value={120}>2 hours</option>
+                <option value={180}>3 hours</option>
+                <option value={240}>4 hours</option>
+              </select>
+            </label>
+
+            <div className="modal-buttons">
+              <button
+                className="modal-btn modal-btn-save"
+                onClick={handleSchedule}
+                disabled={!selectedDayId}
+              >
+                Add to Schedule
+              </button>
+              <button
+                className="modal-btn modal-btn-cancel"
+                onClick={() => setScheduleItem(null)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

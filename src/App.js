@@ -13,9 +13,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import DayTabs from "./components/DayTabs";
-import ActivityCard from "./components/ActivityCard";
 import ActivityModal from "./components/ActivityModal";
-import chicagoItinerary from "./data/chicagoItinerary";
 import groupActivities from "./utils/groupActivities";
 import "./App.css";
 import { auth } from "./firebase";
@@ -203,7 +201,7 @@ if (!user) {
         onSelectView={setSelectedView}
       />
 
-{selectedView === "todo" && <ActionItems userId={user.uid} />}
+{selectedView === "todo" && <ActionItems userId={user.uid} days={days} />}
 
       {selectedView === "day" && (
       <>
@@ -231,19 +229,7 @@ if (!user) {
         </>
       )}
 
-      {selectedDayId === "mon-apr-20" && (
-        <div className="overflow-section">
-          <h3>If Time Permits</h3>
-          {chicagoItinerary.overflow.map((item) => (
-            <div key={item.id} className="overflow-item">
-              <span>
-                {item.emoji} {item.title}
-              </span>
-              <p className="activity-notes">{item.notes}</p>
-            </div>
-          ))}
-        </div>
-      )}
+     
 </>
       )}
       {/* Floating "+" button to add an activity */}

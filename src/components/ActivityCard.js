@@ -34,9 +34,7 @@ function ActivityCard({ activity, onToggleComplete, onEdit }) {
 
   // Calculate height based on hour span
   // Base height is 64px per hour, matching the timeline grid
-  const cardHeight = activity.hourSpan > 1
-    ? `${activity.hourSpan * 64 - 4}px`
-    : "auto";
+  const cardHeight = "100%";
 
   return (
     <div
@@ -61,9 +59,11 @@ function ActivityCard({ activity, onToggleComplete, onEdit }) {
             <span className="activity-title">
               {activity.emoji} {activity.title}
             </span>
-            {activity.hourSpan > 1 && (
+            {(activity.durationMinutes || 60) > 60 && (
               <span className="activity-duration">
-                {activity.hourSpan}h
+                {activity.durationMinutes >= 60
+                  ? `${activity.durationMinutes / 60}h`
+                  : `${activity.durationMinutes}m`}
               </span>
             )}
           </div>
