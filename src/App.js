@@ -9,6 +9,7 @@ import {
   addDoc,
   updateDoc,
   deleteDoc,
+  setDoc,
   serverTimestamp,
 } from "firebase/firestore";
 import DayTabs from "./components/DayTabs";
@@ -20,6 +21,8 @@ import "./App.css";
 import { auth } from "./firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import LoginScreen from "./components/LoginScreen";
+import ShareModal from "./components/ShareModal";
+import ActionItems from "./components/ActionItems";
 
 const TRIP_ID = "chicago-april-2026";
 
@@ -27,25 +30,36 @@ function App() {
   const [days, setDays] = useState([]);
   const [activities, setActivities] = useState([]);
   const [selectedDayId, setSelectedDayId] = useState(null);
+  const [selectedView, setSelectedView] = useState("todo");
   const [loading, setLoading] = useState(true);
 
   // Modal state: null = closed, "add" = adding, activity object = editing
   const [modalState, setModalState] = useState(null);
+  const [showShareModal, setShowShareModal] = useState(false);
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
 
   // --- AUTH LISTENER ---
   // Checks if the user is logged in. Runs once on mount.
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
       setAuthLoading(false);
+      if (firebaseUser) {
+        await setDoc(doc(db, "users", firebaseUser.uid), {
+          email: firebaseUser.email,
+          displayName: firebaseUser.displayName,
+          updatedAt: serverTimestamp(),
+        }, { merge: true });
+      }
     });
     return () => unsubscribe();
   }, []);
 
   // --- LISTENER 1: Days ---
   useEffect(() => {
+    if (!user) return;
+
     const daysQuery = query(
       collection(db, "trips", TRIP_ID, "days"),
       orderBy("order")
@@ -62,11 +76,11 @@ function App() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [user]);
 
   // --- LISTENER 2: Activities for selected day ---
   useEffect(() => {
-    if (!selectedDayId) return;
+    if (!user || !selectedDayId) return;
 
     const activitiesQuery = query(
       collection(db, "trips", TRIP_ID, "days", selectedDayId, "activities"),
@@ -79,7 +93,7 @@ function App() {
     });
 
     return () => unsubscribe();
-  }, [selectedDayId]);
+  }, [user, selectedDayId]);
 
   // --- TOGGLE COMPLETE ---
   async function handleToggleComplete(activityId, currentStatus) {
@@ -170,17 +184,28 @@ if (!user) {
      <header className="app-header">
         <h1>Chicago 🌆</h1>
         <p className="trip-dates">April 17–20, 2026</p>
-        <button className="signout-btn" onClick={() => signOut(auth)}>
-          Sign out
-        </button>
+        <div style={{ position: "absolute", top: "16px", right: "16px", display: "flex", gap: "8px" }}>
+          <button className="signout-btn" onClick={() => setShowShareModal(true)}>
+            Share
+          </button>
+          <button className="signout-btn" onClick={() => signOut(auth)}>
+            Sign out
+          </button>
+        </div>
       </header>
 
       <DayTabs
         days={days}
         selectedDayId={selectedDayId}
         onSelectDay={setSelectedDayId}
+        selectedView={selectedView}
+        onSelectView={setSelectedView}
       />
 
+{selectedView === "todo" && <ActionItems userId={user.uid} />}
+
+      {selectedView === "day" && (
+      <>
       {/* Color Legend */}
       <div className="color-legend">
         <div className="legend-item"><span className="legend-dot" style={{ background: "#FFD966" }}></span>Confirmed</div>
@@ -228,11 +253,18 @@ if (!user) {
           ))}
         </div>
       )}
-
+</>
+      )}
       {/* Floating "+" button to add an activity */}
       <button className="fab" onClick={() => setModalState("add")}>+</button>
 
       {/* Modal for adding/editing */}
+      {showShareModal && (
+        <ShareModal
+          onClose={() => setShowShareModal(false)}
+          currentUserId={user.uid}
+        />
+      )}
       {modalState && (
         <ActivityModal
           activity={modalState === "add" ? null : modalState}

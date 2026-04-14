@@ -6,6 +6,7 @@
 const chicagoItinerary = {
   name: "Chicago April 2026",
   destination: "Chicago, IL",
+  ownerId: null, // Set to auth.currentUser.uid when seeding to Firestore
   startDate: "2026-04-17",
   endDate: "2026-04-20",
   days: [

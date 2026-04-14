@@ -388,9 +388,6 @@ body {
 }
 
 .signout-btn {
-  position: absolute;
-  top: 16px;
-  right: 16px;
   padding: 4px 10px;
   background: none;
   border: 1px solid #3a3a55;
