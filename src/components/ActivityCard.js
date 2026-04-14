@@ -33,7 +33,7 @@ function handleNavigate(address) {
   window.open(`https://www.google.com/maps/dir/?api=1&destination=${encoded}`, "_blank");
 }
 
-function ActivityCard({ activity, onToggleComplete }) {
+function ActivityCard({ activity, onToggleComplete, onEdit }) {
   const bgColor = CATEGORY_COLORS[activity.category] || "#F9F9F9";
 
   return (
@@ -52,7 +52,7 @@ function ActivityCard({ activity, onToggleComplete }) {
           {activity.completed ? "✅" : "⬜"}
         </button>
 
-        <div className="activity-content">
+        <div className="activity-content" onClick={onEdit} style={{ cursor: "pointer" }}>
           {/* Time and title on the same line */}
           <div className="activity-header">
             <span className="activity-time">{formatTime(activity.time)}</span>

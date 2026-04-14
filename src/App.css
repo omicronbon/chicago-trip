@@ -222,3 +222,121 @@ body {
     padding: 0 16px 80px;
   }
 }
+/* ---- Modal Overlay ---- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: flex-end;        /* Slides up from bottom on mobile */
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal-content {
+  background: #22223a;
+  width: 100%;
+  max-width: 500px;
+  max-height: 85vh;
+  overflow-y: auto;
+  border-radius: 16px 16px 0 0;
+  padding: 24px 20px 32px;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 16px;
+}
+
+.modal-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #8888aa;
+  margin-bottom: 12px;
+}
+
+.modal-input {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  padding: 10px 12px;
+  border: 1px solid #3a3a55;
+  border-radius: 8px;
+  background: #1a1a2e;
+  color: #eeeeff;
+  font-size: 15px;
+  font-family: inherit;
+  min-height: 44px;
+}
+
+.modal-input:focus {
+  outline: none;
+  border-color: #4a6cf7;
+}
+
+.modal-input-short {
+  width: 50%;
+}
+
+.modal-textarea {
+  min-height: 60px;
+  resize: vertical;
+}
+
+.modal-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.modal-btn {
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.modal-btn-save {
+  background: #4a6cf7;
+  color: #ffffff;
+}
+
+.modal-btn-delete {
+  background: #ff4444;
+  color: #ffffff;
+}
+
+.modal-btn-cancel {
+  background: #2a2a40;
+  color: #8888aa;
+}
+
+/* ---- Floating Add Button ---- */
+.fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #4a6cf7;
+  color: #ffffff;
+  font-size: 28px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(74, 108, 247, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}

@@ -6,20 +6,27 @@ import {
   orderBy,
   onSnapshot,
   doc,
+  addDoc,
   updateDoc,
+  deleteDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 import DayTabs from "./components/DayTabs";
 import ActivityCard from "./components/ActivityCard";
+import ActivityModal from "./components/ActivityModal";
 import chicagoItinerary from "./data/chicagoItinerary";
 import "./App.css";
 
 const TRIP_ID = "chicago-april-2026";
 
 function App() {
-  const [days, setDays] = useState([]);         // Day metadata (labels, order)
-  const [activities, setActivities] = useState([]); // Activities for selected day
+  const [days, setDays] = useState([]);
+  const [activities, setActivities] = useState([]);
   const [selectedDayId, setSelectedDayId] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Modal state: null = closed, "add" = adding, activity object = editing
+  const [modalState, setModalState] = useState(null);
 
   // --- LISTENER 1: Days ---
   useEffect(() => {
@@ -41,7 +48,7 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  // --- LISTENER 2: Activities for the selected day ---
+  // --- LISTENER 2: Activities for selected day ---
   useEffect(() => {
     if (!selectedDayId) return;
 
@@ -64,6 +71,42 @@ function App() {
       db, "trips", TRIP_ID, "days", selectedDayId, "activities", activityId
     );
     await updateDoc(activityDoc, { completed: !currentStatus });
+  }
+
+  // --- SAVE (handles both add and edit) ---
+  async function handleSave(formData) {
+    if (modalState === "add") {
+      // Add a new activity document to Firestore
+      const activitiesRef = collection(
+        db, "trips", TRIP_ID, "days", selectedDayId, "activities"
+      );
+      await addDoc(activitiesRef, {
+        ...formData,
+        completed: false,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+    } else {
+      // Edit an existing activity
+      const activityDoc = doc(
+        db, "trips", TRIP_ID, "days", selectedDayId, "activities", modalState.id
+      );
+      await updateDoc(activityDoc, {
+        ...formData,
+        updatedAt: serverTimestamp(),
+      });
+    }
+
+    setModalState(null); // Close modal
+  }
+
+  // --- DELETE ---
+  async function handleDelete(activityId) {
+    const activityDoc = doc(
+      db, "trips", TRIP_ID, "days", selectedDayId, "activities", activityId
+    );
+    await deleteDoc(activityDoc);
+    setModalState(null);
   }
 
   const selectedDay = days.find((d) => d.id === selectedDayId);
@@ -105,6 +148,7 @@ function App() {
                 onToggleComplete={() =>
                   handleToggleComplete(activity.id, activity.completed)
                 }
+                onEdit={() => setModalState(activity)}
               />
             ))}
           </div>
@@ -123,6 +167,19 @@ function App() {
             </div>
           ))}
         </div>
+      )}
+
+      {/* Floating "+" button to add an activity */}
+      <button className="fab" onClick={() => setModalState("add")}>+</button>
+
+      {/* Modal for adding/editing */}
+      {modalState && (
+        <ActivityModal
+          activity={modalState === "add" ? null : modalState}
+          onSave={handleSave}
+          onDelete={handleDelete}
+          onClose={() => setModalState(null)}
+        />
       )}
     </div>
   );
