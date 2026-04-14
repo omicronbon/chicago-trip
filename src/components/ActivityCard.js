@@ -71,6 +71,15 @@ function ActivityCard({ activity, onToggleComplete, onEdit }) {
           {activity.notes && (
             <p className="activity-notes">{activity.notes}</p>
           )}
+          {activity.createdBy && (
+            <span style={{
+              fontSize: "11px",
+              color: "#666",
+              fontStyle: "italic",
+            }}>
+              Added by {activity.createdBy.split("@")[0]}
+            </span>
+          )}
         </div>
       </div>
 

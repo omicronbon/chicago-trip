@@ -124,6 +124,7 @@ function App() {
       await addDoc(activitiesRef, {
         ...formData,
         completed: false,
+        createdBy: user.displayName || user.email,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
