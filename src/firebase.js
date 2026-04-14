@@ -3,7 +3,7 @@
 // The config values come from your .env.local file, keeping them out of GitHub.
 
 import { initializeApp } from "firebase/app";
-import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
+import { initializeFirestore, persistentLocalCache } from "firebase/firestore";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 const firebaseConfig = {
@@ -19,12 +19,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 // Initialize Firestore (your database)
-const db = getFirestore(app);
-
-// Enable offline persistence — the app works without internet
-// and syncs when you're back online
-enableIndexedDbPersistence(db).catch((err) => {
-  console.log("Offline persistence error:", err.code);
+const db = initializeFirestore(app, {
+  localCache: persistentLocalCache(),
 });
 
 // Initialize Auth (login system)
