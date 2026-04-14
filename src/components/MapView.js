@@ -1,11 +1,9 @@
 // MapView.js
-// Trip-wide map showing all activities with addresses, plotted on OpenStreetMap via Leaflet.
+// Trip-wide map showing all activities plotted on Google Maps.
 // Coordinates are stored on each activity doc in Firestore (lat/lng fields).
 
 import React, { useState, useMemo } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import { APIProvider, Map, AdvancedMarker, InfoWindow } from "@vis.gl/react-google-maps";
 
 const CATEGORY_COLORS = {
   confirmed: "#FFD966",
@@ -24,23 +22,6 @@ const DAY_FILTERS = [
   { label: "Mon", value: "mon" },
 ];
 
-function makeCircleIcon(color) {
-  return L.divIcon({
-    className: "",
-    html: `<div style="
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: ${color};
-      border: 2px solid rgba(0,0,0,0.4);
-      box-shadow: 0 1px 4px rgba(0,0,0,0.5);
-    "></div>`,
-    iconSize: [16, 16],
-    iconAnchor: [8, 8],
-    popupAnchor: [0, -10],
-  });
-}
-
 function formatTime(time) {
   if (!time) return "";
   const [h, m] = time.split(":").map(Number);
@@ -49,29 +30,26 @@ function formatTime(time) {
   return `${hour}:${String(m).padStart(2, "0")} ${period}`;
 }
 
-// Map a day label like "Fri", "Sat", "Sun", "Mon" to a filter value
 function getDayFilter(dayLabel) {
   if (!dayLabel) return "all";
-  const lower = dayLabel.toLowerCase().slice(0, 3);
-  return lower; // "fri", "sat", "sun", "mon"
+  return dayLabel.toLowerCase().slice(0, 3);
 }
 
 function MapView({ activities, days, onBackfill }) {
   const [activeFilter, setActiveFilter] = useState("all");
+  const [selectedId, setSelectedId] = useState(null);
 
-  const mappedActivities = useMemo(() => {
-    return activities.filter((a) => a.lat != null && a.lng != null);
-  }, [activities]);
+  const mappedActivities = useMemo(
+    () => activities.filter((a) => a.lat != null && a.lng != null),
+    [activities]
+  );
 
   const filteredActivities = useMemo(() => {
     if (activeFilter === "all") return mappedActivities;
-    return mappedActivities.filter(
-      (a) => getDayFilter(a.dayLabel) === activeFilter
-    );
+    return mappedActivities.filter((a) => getDayFilter(a.dayLabel) === activeFilter);
   }, [mappedActivities, activeFilter]);
 
-  const totalCount = activities.length;
-  const mappedCount = mappedActivities.length;
+  const selectedActivity = filteredActivities.find((a) => a.id === selectedId) || null;
 
   return (
     <div className="map-wrapper">
@@ -88,7 +66,7 @@ function MapView({ activities, days, onBackfill }) {
           ))}
         </div>
         <span className="map-counter">
-          {mappedCount} of {totalCount} on map
+          {mappedActivities.length} of {activities.length} on map
         </span>
         {onBackfill && (
           <button
@@ -111,63 +89,77 @@ function MapView({ activities, days, onBackfill }) {
       </div>
 
       <div className="map-container">
-        <MapContainer
-          center={[41.8827, -87.6233]}
-          zoom={12}
-          style={{ height: "100%", width: "100%" }}
-          zoomControl={true}
-        >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-          {filteredActivities.map((activity) => {
-            const color = CATEGORY_COLORS[activity.category] || "#888";
-            const icon = makeCircleIcon(color);
-            const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${activity.lat},${activity.lng}`;
+        <APIProvider apiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}>
+          <Map
+            defaultCenter={{ lat: 41.8827, lng: -87.6233 }}
+            defaultZoom={12}
+            mapId="trip-map"
+            gestureHandling="greedy"
+            style={{ width: "100%", height: "100%" }}
+          >
+            {filteredActivities.map((activity) => {
+              const color = CATEGORY_COLORS[activity.category] || "#888";
+              return (
+                <AdvancedMarker
+                  key={activity.id}
+                  position={{ lat: activity.lat, lng: activity.lng }}
+                  onClick={() => setSelectedId(activity.id)}
+                >
+                  <div
+                    style={{
+                      width: 18,
+                      height: 18,
+                      borderRadius: "50%",
+                      background: color,
+                      border: "2px solid white",
+                      boxShadow: "0 2px 6px rgba(0,0,0,0.4)",
+                      cursor: "pointer",
+                    }}
+                  />
+                </AdvancedMarker>
+              );
+            })}
 
-            return (
-              <Marker
-                key={activity.id}
-                position={[activity.lat, activity.lng]}
-                icon={icon}
+            {selectedActivity && (
+              <InfoWindow
+                position={{ lat: selectedActivity.lat, lng: selectedActivity.lng }}
+                onCloseClick={() => setSelectedId(null)}
               >
-                <Popup>
-                  <div style={{ minWidth: "160px" }}>
-                    <div style={{ fontWeight: "bold", fontSize: "14px", marginBottom: "4px" }}>
-                      {activity.emoji ? `${activity.emoji} ` : ""}{activity.title}
-                    </div>
-                    <div style={{ fontSize: "12px", color: "#666", marginBottom: "4px" }}>
-                      {activity.dayLabel} · {formatTime(activity.time)}
-                    </div>
-                    {activity.notes ? (
-                      <div style={{ fontSize: "11px", color: "#888", marginBottom: "8px" }}>
-                        {activity.notes}
-                      </div>
-                    ) : null}
-                    <a
-                      href={mapsUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        display: "inline-block",
-                        padding: "4px 10px",
-                        background: "#4a6cf7",
-                        color: "#fff",
-                        borderRadius: "6px",
-                        fontSize: "12px",
-                        textDecoration: "none",
-                        fontWeight: "600",
-                      }}
-                    >
-                      Navigate
-                    </a>
+                <div style={{ minWidth: 160, fontFamily: "sans-serif" }}>
+                  <div style={{ fontWeight: "bold", fontSize: 14, marginBottom: 4, color: "#111" }}>
+                    {selectedActivity.emoji ? `${selectedActivity.emoji} ` : ""}
+                    {selectedActivity.title}
                   </div>
-                </Popup>
-              </Marker>
-            );
-          })}
-        </MapContainer>
+                  <div style={{ fontSize: 12, color: "#666", marginBottom: 4 }}>
+                    {selectedActivity.dayLabel} · {formatTime(selectedActivity.time)}
+                  </div>
+                  {selectedActivity.notes && (
+                    <div style={{ fontSize: 11, color: "#888", marginBottom: 8 }}>
+                      {selectedActivity.notes}
+                    </div>
+                  )}
+                  <a
+                    href={`https://www.google.com/maps/dir/?api=1&destination=${selectedActivity.lat},${selectedActivity.lng}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: "inline-block",
+                      padding: "4px 10px",
+                      background: "#4a6cf7",
+                      color: "#fff",
+                      borderRadius: 6,
+                      fontSize: 12,
+                      textDecoration: "none",
+                      fontWeight: "600",
+                    }}
+                  >
+                    Navigate
+                  </a>
+                </div>
+              </InfoWindow>
+            )}
+          </Map>
+        </APIProvider>
       </div>
     </div>
   );
