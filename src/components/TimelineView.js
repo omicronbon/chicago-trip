@@ -9,7 +9,7 @@ function timeToMinutes(time24) {
 
 // Converts minutes from midnight to "5:00 PM" format
 function formatHour(minutes) {
-  const h = Math.floor(minutes / 60);
+  const h = Math.floor(minutes / 60) % 24;
   const period = h >= 12 ? "PM" : "AM";
   const h12 = h % 12 || 12;
   return `${h12} ${period}`;
