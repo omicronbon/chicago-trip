@@ -15,6 +15,7 @@ import DayTabs from "./components/DayTabs";
 import ActivityCard from "./components/ActivityCard";
 import ActivityModal from "./components/ActivityModal";
 import chicagoItinerary from "./data/chicagoItinerary";
+import groupActivities from "./utils/groupActivities";
 import "./App.css";
 import { auth } from "./firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
@@ -82,10 +83,21 @@ function App() {
 
   // --- TOGGLE COMPLETE ---
   async function handleToggleComplete(activityId, currentStatus) {
-    const activityDoc = doc(
-      db, "trips", TRIP_ID, "days", selectedDayId, "activities", activityId
+    const newStatus = !currentStatus;
+
+    // Find the grouped activity to get any child IDs
+    const grouped = groupedActivities.find((a) => a.id === activityId);
+    const idsToToggle = [activityId, ...(grouped?.childIds || [])];
+
+    // Toggle the parent and all continuation entries
+    await Promise.all(
+      idsToToggle.map((id) => {
+        const activityDoc = doc(
+          db, "trips", TRIP_ID, "days", selectedDayId, "activities", id
+        );
+        return updateDoc(activityDoc, { completed: newStatus });
+      })
     );
-    await updateDoc(activityDoc, { completed: !currentStatus });
   }
 
   // --- SAVE (handles both add and edit) ---
@@ -125,6 +137,9 @@ function App() {
   }
 
   const selectedDay = days.find((d) => d.id === selectedDayId);
+
+  // Group "(cont.)" activities into multi-hour blocks
+  const groupedActivities = groupActivities(activities);
 
  // Show login screen if not authenticated
  if (authLoading) {
@@ -166,21 +181,36 @@ if (!user) {
         onSelectDay={setSelectedDayId}
       />
 
+      {/* Color Legend */}
+      <div className="color-legend">
+        <div className="legend-item"><span className="legend-dot" style={{ background: "#FFD966" }}></span>Confirmed</div>
+        <div className="legend-item"><span className="legend-dot" style={{ background: "#FFEB3B" }}></span>New</div>
+        <div className="legend-item"><span className="legend-dot" style={{ background: "#A8D5A2" }}></span>Travel</div>
+        <div className="legend-item"><span className="legend-dot" style={{ background: "#FF9800" }}></span>Added</div>
+        <div className="legend-item"><span className="legend-dot" style={{ background: "#F9F9F9" }}></span>Free</div>
+      </div>
+
       {selectedDay && (
         <>
-          <h2 className="day-heading">{selectedDay.label}</h2>
+          <h2 className="day-heading">{selectedDay.labelFull || selectedDay.label}</h2>
 
           <div className="activity-list">
-            {activities.map((activity) => (
-              <ActivityCard
-                key={activity.id}
-                activity={activity}
-                onToggleComplete={() =>
-                  handleToggleComplete(activity.id, activity.completed)
-                }
-                onEdit={() => setModalState(activity)}
-              />
-            ))}
+            {groupedActivities.length === 0 ? (
+              <div className="empty-state">
+                No activities yet. Tap + to add one.
+              </div>
+            ) : (
+              groupedActivities.map((activity) => (
+                <ActivityCard
+                  key={activity.id}
+                  activity={activity}
+                  onToggleComplete={() =>
+                    handleToggleComplete(activity.id, activity.completed)
+                  }
+                  onEdit={() => setModalState(activity)}
+                />
+              ))
+            )}
           </div>
         </>
       )}

@@ -27,6 +27,7 @@ body {
 .app-header {
   text-align: center;
   padding: 24px 16px 8px;
+  position: relative;
 }
 
 .app-header h1 {
@@ -94,17 +95,17 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px;
-  border-radius: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
   background: #2a2a40;
-  /* Left border shows the category color */
-  border-left: 4px solid #888;
-  transition: opacity 0.2s ease;
+  border-left: 5px solid #888;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-/* When an activity is checked off, dim it */
+/* When an activity is checked off, dim and shrink it */
 .activity-card.completed {
-  opacity: 0.45;
+  opacity: 0.4;
+  transform: scale(0.98);
 }
 
 .activity-card.completed .activity-title,
@@ -122,15 +123,32 @@ body {
 
 /* ---- Checkbox button ---- */
 .check-btn {
-  background: none;
-  border: none;
-  font-size: 20px;
+  background: #1a1a2e;
+  border: 2px solid #3a3a55;
+  border-radius: 50%;
+  font-size: 16px;
   cursor: pointer;
-  padding: 2px;
+  padding: 0;
+  width: 28px;
+  height: 28px;
   min-width: 28px;
-  min-height: 44px; /* Touch target */
+  min-height: 28px;
   display: flex;
   align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.check-btn.checked {
+  background: #4a6cf7;
+  border-color: #4a6cf7;
+}
+
+.checkmark {
+  color: #ffffff;
+  font-size: 14px;
+  line-height: 1;
 }
 
 /* ---- Activity content (time, title, notes) ---- */
@@ -370,12 +388,86 @@ body {
 }
 
 .signout-btn {
-  margin-top: 8px;
-  padding: 6px 12px;
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  padding: 4px 10px;
   background: none;
   border: 1px solid #3a3a55;
   border-radius: 6px;
-  color: #8888aa;
-  font-size: 12px;
+  color: #666688;
+  font-size: 11px;
   cursor: pointer;
+}
+
+/* ---- Duration badge ---- */
+.activity-duration {
+  font-size: 11px;
+  font-weight: 600;
+  color: #4a6cf7;
+  background: rgba(74, 108, 247, 0.15);
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-left: 4px;
+}
+
+/* ---- Empty hour slot ---- */
+.empty-hour {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  min-height: 40px;
+  opacity: 0.3;
+}
+
+.empty-hour-time {
+  font-size: 13px;
+  font-weight: 600;
+  color: #555577;
+  width: 75px;
+}
+
+.empty-hour-line {
+  flex: 1;
+  height: 1px;
+  background: #333355;
+  margin-left: 8px;
+}
+
+/* ---- Color Legend ---- */
+.color-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px 16px 8px;
+  justify-content: center;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: #666688;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ---- Empty state ---- */
+.empty-state {
+  text-align: center;
+  padding: 40px 16px;
+  color: #555577;
+  font-size: 15px;
+}
+
+/* ---- Navigate icon ---- */
+.nav-icon {
+  font-size: 18px;
+  color: #8888aa;
 }
