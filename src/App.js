@@ -16,6 +16,9 @@ import ActivityCard from "./components/ActivityCard";
 import ActivityModal from "./components/ActivityModal";
 import chicagoItinerary from "./data/chicagoItinerary";
 import "./App.css";
+import { auth } from "./firebase";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import LoginScreen from "./components/LoginScreen";
 
 const TRIP_ID = "chicago-april-2026";
 
@@ -27,6 +30,18 @@ function App() {
 
   // Modal state: null = closed, "add" = adding, activity object = editing
   const [modalState, setModalState] = useState(null);
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  // --- AUTH LISTENER ---
+  // Checks if the user is logged in. Runs once on mount.
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser);
+      setAuthLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
 
   // --- LISTENER 1: Days ---
   useEffect(() => {
@@ -111,6 +126,18 @@ function App() {
 
   const selectedDay = days.find((d) => d.id === selectedDayId);
 
+ // Show login screen if not authenticated
+ if (authLoading) {
+  return (
+    <div className="app">
+      <p style={{ textAlign: "center", marginTop: "4rem" }}>Loading...</p>
+    </div>
+  );
+}
+
+if (!user) {
+  return <LoginScreen />;
+}
   if (loading) {
     return (
       <div className="app">
@@ -125,9 +152,12 @@ function App() {
 
   return (
     <div className="app">
-      <header className="app-header">
+     <header className="app-header">
         <h1>Chicago 🌆</h1>
         <p className="trip-dates">April 17–20, 2026</p>
+        <button className="signout-btn" onClick={() => signOut(auth)}>
+          Sign out
+        </button>
       </header>
 
       <DayTabs

@@ -340,3 +340,42 @@ body {
   justify-content: center;
   z-index: 50;
 }
+/* ---- Login Screen ---- */
+.login-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.login-screen h1 {
+  font-size: 32px;
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+
+.login-btn {
+  margin-top: 32px;
+  padding: 14px 28px;
+  background: #4a6cf7;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.signout-btn {
+  margin-top: 8px;
+  padding: 6px 12px;
+  background: none;
+  border: 1px solid #3a3a55;
+  border-radius: 6px;
+  color: #8888aa;
+  font-size: 12px;
+  cursor: pointer;
+}
