@@ -3,8 +3,9 @@
 // Shows pre-filled fields when editing, empty fields when adding.
 // The "Delete" button only appears when editing an existing activity.
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { geocodeAddress } from "../utils/geocode";
+import { searchAddress } from "../utils/addressSearch";
 
 // Category options matching your color system
 const CATEGORIES = [
@@ -17,10 +18,8 @@ const CATEGORIES = [
 ];
 
 function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime }) {
-  // If `activity` is provided, we're editing. Otherwise, adding.
   const isEditing = !!activity;
 
-  // Form state, pre-filled if editing
   const [title, setTitle] = useState("");
   const [emoji, setEmoji] = useState("");
   const [time, setTime] = useState("12:00");
@@ -29,11 +28,18 @@ function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime }) {
   const [address, setAddress] = useState("");
   const [durationMinutes, setDurationMinutes] = useState(60);
   const [saving, setSaving] = useState(false);
-  // Track the original address so we only re-geocode if it changed
   const [originalAddress, setOriginalAddress] = useState("");
 
-  // Pre-fill fields when editing an existing activity
- useEffect(() => {
+  // Autocomplete state
+  const [addressSuggestions, setAddressSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  // If user picks a suggestion, store coords so we skip Nominatim on save
+  const [selectedCoords, setSelectedCoords] = useState(null);
+
+  const debounceRef = useRef(null);
+  const addressWrapperRef = useRef(null);
+
+  useEffect(() => {
     if (activity) {
       setTitle(activity.title || "");
       setEmoji(activity.emoji || "");
@@ -48,27 +54,73 @@ function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime }) {
     }
   }, [activity, prefilledTime]);
 
+  // Close suggestions when clicking outside the address wrapper
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (addressWrapperRef.current && !addressWrapperRef.current.contains(e.target)) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, []);
+
+  const handleAddressChange = useCallback((value) => {
+    setAddress(value);
+    setSelectedCoords(null); // User is typing again, clear pre-selected coords
+
+    clearTimeout(debounceRef.current);
+
+    if (value.trim().length < 3) {
+      setAddressSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    debounceRef.current = setTimeout(async () => {
+      const results = await searchAddress(value);
+      setAddressSuggestions(results);
+      setShowSuggestions(results.length > 0);
+    }, 300);
+  }, []);
+
+  function handleSelectSuggestion(suggestion) {
+    const full = suggestion.address || suggestion.name;
+    setAddress(full);
+    setSelectedCoords({ lat: suggestion.lat, lng: suggestion.lng });
+    setAddressSuggestions([]);
+    setShowSuggestions(false);
+  }
+
+  function handleAddressKeyDown(e) {
+    if (e.key === "Escape") {
+      setShowSuggestions(false);
+    }
+  }
+
   async function handleSubmit() {
-    if (!title.trim()) return; // Don't save empty titles
+    if (!title.trim()) return;
     setSaving(true);
 
     const trimmedAddress = address.trim();
     let coords = {};
 
-    // Only geocode if there's an address and it changed (or it's a new activity)
-    const addressChanged = trimmedAddress !== originalAddress.trim();
-    if (trimmedAddress && (!isEditing || addressChanged)) {
-      const result = await geocodeAddress(trimmedAddress);
-      if (result) {
-        coords = { lat: result.lat, lng: result.lng };
-      } else {
-        // Geocoding failed — save without coords, activity won't appear on map
+    if (selectedCoords) {
+      // User picked a suggestion — coords already known, skip geocoding
+      coords = { lat: selectedCoords.lat, lng: selectedCoords.lng };
+    } else {
+      const addressChanged = trimmedAddress !== originalAddress.trim();
+      if (trimmedAddress && (!isEditing || addressChanged)) {
+        const result = await geocodeAddress(trimmedAddress);
+        coords = result ? { lat: result.lat, lng: result.lng } : { lat: null, lng: null };
+      } else if (!trimmedAddress) {
         coords = { lat: null, lng: null };
       }
-    } else if (!trimmedAddress) {
-      coords = { lat: null, lng: null };
     }
-    // If editing and address didn't change, don't overwrite existing coords
 
     onSave({
       title: title.trim(),
@@ -84,7 +136,6 @@ function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime }) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      {/* Stop clicks inside the modal from closing it */}
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <h2 className="modal-title">{isEditing ? "Edit Activity" : "Add Activity"}</h2>
 
@@ -144,7 +195,8 @@ function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime }) {
             className="modal-input modal-textarea"
           />
         </label>
-<label className="modal-label">
+
+        <label className="modal-label">
           Duration
           <select
             value={durationMinutes}
@@ -162,15 +214,43 @@ function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime }) {
             <option value={240}>4 hours</option>
           </select>
         </label>
+
         <label className="modal-label">
           Address (for Navigate button)
-          <input
-            type="text"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            placeholder="e.g. 233 S Wacker Dr, Chicago, IL"
-            className="modal-input"
-          />
+          <div className="address-wrapper" ref={addressWrapperRef}>
+            <input
+              type="text"
+              value={address}
+              onChange={(e) => handleAddressChange(e.target.value)}
+              onKeyDown={handleAddressKeyDown}
+              placeholder="e.g. 233 S Wacker Dr, Chicago, IL"
+              className="modal-input"
+              autoComplete="off"
+            />
+            {showSuggestions && (
+              <div className="address-suggestions">
+                {addressSuggestions.map((s, i) => (
+                  <div
+                    key={i}
+                    className="address-suggestion-item"
+                    onMouseDown={(e) => {
+                      e.preventDefault(); // prevent input blur before click fires
+                      handleSelectSuggestion(s);
+                    }}
+                    onTouchEnd={(e) => {
+                      e.preventDefault();
+                      handleSelectSuggestion(s);
+                    }}
+                  >
+                    <div className="address-suggestion-name">{s.name}</div>
+                    {s.address && (
+                      <div className="address-suggestion-address">{s.address}</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </label>
 
         <div className="modal-buttons">

@@ -56,7 +56,7 @@ function getDayFilter(dayLabel) {
   return lower; // "fri", "sat", "sun", "mon"
 }
 
-function MapView({ activities, days }) {
+function MapView({ activities, days, onBackfill }) {
   const [activeFilter, setActiveFilter] = useState("all");
 
   const mappedActivities = useMemo(() => {
@@ -90,6 +90,24 @@ function MapView({ activities, days }) {
         <span className="map-counter">
           {mappedCount} of {totalCount} on map
         </span>
+        {onBackfill && (
+          <button
+            style={{
+              padding: "4px 10px",
+              background: "#333",
+              color: "#888",
+              border: "1px solid #444",
+              borderRadius: "8px",
+              fontSize: "11px",
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+              flexShrink: 0,
+            }}
+            onClick={onBackfill}
+          >
+            Backfill Coords
+          </button>
+        )}
       </div>
 
       <div className="map-container">

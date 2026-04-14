@@ -248,30 +248,14 @@ if (!user) {
 {selectedView === "todo" && <ActionItems userId={user.uid} days={days} />}
 
       {selectedView === "map" && (
-        <>
-          <MapView activities={allActivities} days={days} />
-          {user.uid === "DxNeFkJCsJbRyjgNDqn5uK29bf22" && (
-            <div style={{ padding: "16px", textAlign: "center" }}>
-              <button
-                style={{
-                  padding: "8px 16px",
-                  background: "#333",
-                  color: "#888",
-                  border: "1px solid #444",
-                  borderRadius: "8px",
-                  fontSize: "12px",
-                  cursor: "pointer",
-                }}
-                onClick={async () => {
-                  const result = await backfillCoordinates();
-                  alert(`Done! Geocoded: ${result.geocoded}, Skipped: ${result.skipped}, Failed: ${result.failed}`);
-                }}
-              >
-                Backfill Coordinates
-              </button>
-            </div>
-          )}
-        </>
+        <MapView
+          activities={allActivities}
+          days={days}
+          onBackfill={async () => {
+            const result = await backfillCoordinates();
+            alert(`Done! Geocoded: ${result.geocoded}, Skipped: ${result.skipped}, Failed: ${result.failed}`);
+          }}
+        />
       )}
 
       {selectedView === "day" && (

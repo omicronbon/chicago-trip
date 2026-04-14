@@ -486,6 +486,62 @@ body {
   padding: 0 8px;
 }
 
+/* ---- Address Autocomplete ---- */
+.address-wrapper {
+  position: relative;
+  margin-top: 4px;
+}
+
+.address-wrapper .modal-input {
+  margin-top: 0;
+  width: 100%;
+}
+
+.address-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #22223a;
+  border: 1px solid #3a3a55;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 200;
+  margin-top: 4px;
+}
+
+.address-suggestion-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid #2a2a40;
+  cursor: pointer;
+  min-height: 44px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.address-suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.address-suggestion-item:active {
+  background: #2a2a50;
+}
+
+.address-suggestion-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: #eeeeff;
+}
+
+.address-suggestion-address {
+  font-size: 12px;
+  color: #7777aa;
+  margin-top: 2px;
+}
+
 /* ---- Map View ---- */
 .map-wrapper {
   display: flex;
