@@ -22,6 +22,8 @@ import LoginScreen from "./components/LoginScreen";
 import ShareModal from "./components/ShareModal";
 import ActionItems from "./components/ActionItems";
 import TimelineView from "./components/TimelineView";
+import MapView from "./components/MapView";
+import { backfillCoordinates } from "./utils/backfillCoordinates";
 
 const TRIP_ID = "chicago-april-2026";
 
@@ -38,6 +40,8 @@ function App() {
   const [prefilledTime, setPrefilledTime] = useState(null);
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
+  // All activities across all days, keyed by dayId — used for the map view
+  const [allActivitiesMap, setAllActivitiesMap] = useState({});
 
   // --- AUTH LISTENER ---
   // Checks if the user is logged in. Runs once on mount.
@@ -94,6 +98,24 @@ function App() {
 
     return () => unsubscribe();
   }, [user, selectedDayId]);
+
+  // --- LISTENER 3: All activities across all days (for map view) ---
+  useEffect(() => {
+    if (!user || days.length === 0) return;
+
+    const unsubscribes = days.map((day) => {
+      const q = query(
+        collection(db, "trips", TRIP_ID, "days", day.id, "activities"),
+        orderBy("time")
+      );
+      return onSnapshot(q, (snapshot) => {
+        const acts = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+        setAllActivitiesMap((prev) => ({ ...prev, [day.id]: acts }));
+      });
+    });
+
+    return () => unsubscribes.forEach((fn) => fn());
+  }, [user, days]);
 
   // --- TOGGLE COMPLETE ---
   async function handleToggleComplete(activityId, currentStatus) {
@@ -164,6 +186,15 @@ function App() {
   // Group "(cont.)" activities into multi-hour blocks
   const groupedActivities = groupActivities(activities);
 
+  // Flatten all activities across all days for the map view, enriched with day info
+  const allActivities = days.flatMap((day) =>
+    (allActivitiesMap[day.id] || []).map((act) => ({
+      ...act,
+      dayId: day.id,
+      dayLabel: day.label,
+    }))
+  );
+
  // Show login screen if not authenticated
  if (authLoading) {
   return (
@@ -211,9 +242,37 @@ if (!user) {
         onSelectView={setSelectedView}
         tripStartDate="2026-04-17"
         dayProgress={dayProgress}
+        onSelectMap={() => setSelectedView("map")}
       />
 
 {selectedView === "todo" && <ActionItems userId={user.uid} days={days} />}
+
+      {selectedView === "map" && (
+        <>
+          <MapView activities={allActivities} days={days} />
+          {user.uid === "DxNeFkJCsJbRyjgNDqn5uK29bf22" && (
+            <div style={{ padding: "16px", textAlign: "center" }}>
+              <button
+                style={{
+                  padding: "8px 16px",
+                  background: "#333",
+                  color: "#888",
+                  border: "1px solid #444",
+                  borderRadius: "8px",
+                  fontSize: "12px",
+                  cursor: "pointer",
+                }}
+                onClick={async () => {
+                  const result = await backfillCoordinates();
+                  alert(`Done! Geocoded: ${result.geocoded}, Skipped: ${result.skipped}, Failed: ${result.failed}`);
+                }}
+              >
+                Backfill Coordinates
+              </button>
+            </div>
+          )}
+        </>
+      )}
 
       {selectedView === "day" && (
       <>

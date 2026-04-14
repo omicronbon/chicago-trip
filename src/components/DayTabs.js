@@ -22,6 +22,7 @@ function DayTabs({
   onSelectView,
   tripStartDate,
   dayProgress,
+  onSelectMap,
 }) {
   const today = getToday();
   const countdown = tripStartDate ? getCountdown(tripStartDate) : null;
@@ -93,6 +94,12 @@ function DayTabs({
             </button>
           );
         })}
+        <button
+          className={`day-tab ${selectedView === "map" ? "active" : ""}`}
+          onClick={onSelectMap}
+        >
+          <span className="tab-label">📍 Map</span>
+        </button>
       </div>
     </>
   );

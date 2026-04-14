@@ -54,6 +54,7 @@ body {
 
 .day-tab {
   flex: 1;
+  flex-shrink: 0;
   min-width: 70px;
   padding: 10px 4px;
   border: none;
@@ -483,4 +484,63 @@ body {
 .activity-list {
   position: relative;
   padding: 0 8px;
+}
+
+/* ---- Map View ---- */
+.map-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 130px); /* below header + tabs */
+}
+
+.map-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #1a1a2e;
+  position: relative;
+  z-index: 500; /* above Leaflet tiles */
+  flex-shrink: 0;
+}
+
+.map-filter-pills {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  flex: 1;
+}
+
+.map-pill {
+  padding: 6px 14px;
+  border-radius: 16px;
+  border: none;
+  background: #2a2a40;
+  color: #aaaacc;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  min-height: 34px;
+  min-width: 44px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.map-pill.active {
+  background: #4a6cf7;
+  color: #ffffff;
+}
+
+.map-counter {
+  font-size: 11px;
+  color: #555577;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.map-container {
+  flex: 1;
+  min-height: 0; /* Required for flex child with Leaflet */
+  width: 100%;
 }

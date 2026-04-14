@@ -4,6 +4,7 @@
 // The "Delete" button only appears when editing an existing activity.
 
 import React, { useState, useEffect } from "react";
+import { geocodeAddress } from "../utils/geocode";
 
 // Category options matching your color system
 const CATEGORIES = [
@@ -27,6 +28,9 @@ function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime }) {
   const [notes, setNotes] = useState("");
   const [address, setAddress] = useState("");
   const [durationMinutes, setDurationMinutes] = useState(60);
+  const [saving, setSaving] = useState(false);
+  // Track the original address so we only re-geocode if it changed
+  const [originalAddress, setOriginalAddress] = useState("");
 
   // Pre-fill fields when editing an existing activity
  useEffect(() => {
@@ -37,14 +41,34 @@ function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime }) {
       setCategory(activity.category || "new");
       setNotes(activity.notes || "");
       setAddress(activity.address || "");
+      setOriginalAddress(activity.address || "");
       setDurationMinutes(activity.durationMinutes || 60);
     } else if (prefilledTime) {
       setTime(prefilledTime);
     }
   }, [activity, prefilledTime]);
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!title.trim()) return; // Don't save empty titles
+    setSaving(true);
+
+    const trimmedAddress = address.trim();
+    let coords = {};
+
+    // Only geocode if there's an address and it changed (or it's a new activity)
+    const addressChanged = trimmedAddress !== originalAddress.trim();
+    if (trimmedAddress && (!isEditing || addressChanged)) {
+      const result = await geocodeAddress(trimmedAddress);
+      if (result) {
+        coords = { lat: result.lat, lng: result.lng };
+      } else {
+        // Geocoding failed — save without coords, activity won't appear on map
+        coords = { lat: null, lng: null };
+      }
+    } else if (!trimmedAddress) {
+      coords = { lat: null, lng: null };
+    }
+    // If editing and address didn't change, don't overwrite existing coords
 
     onSave({
       title: title.trim(),
@@ -52,8 +76,9 @@ function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime }) {
       time,
       category,
       notes: notes.trim(),
-      address: address.trim(),
+      address: trimmedAddress,
       durationMinutes: Number(durationMinutes),
+      ...coords,
     });
   }
 
@@ -149,8 +174,8 @@ function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime }) {
         </label>
 
         <div className="modal-buttons">
-          <button className="modal-btn modal-btn-save" onClick={handleSubmit}>
-            {isEditing ? "Save Changes" : "Add Activity"}
+          <button className="modal-btn modal-btn-save" onClick={handleSubmit} disabled={saving}>
+            {saving ? "Saving..." : isEditing ? "Save Changes" : "Add Activity"}
           </button>
 
           {isEditing && (
