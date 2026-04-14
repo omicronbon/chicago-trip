@@ -233,7 +233,9 @@ if (!user) {
 </>
       )}
       {/* Floating "+" button to add an activity */}
-      <button className="fab" onClick={() => setModalState("add")}>+</button>
+      {selectedView === "day" && (
+        <button className="fab" onClick={() => setModalState("add")}>+</button>
+      )}
 
       {/* Modal for adding/editing */}
       {showShareModal && (
