@@ -275,60 +275,58 @@ if (!user) {
         activitiesMap={allActivitiesMap}
       />
 
-{selectedView === "todo" && <ActionItems userId={user.uid} days={days} />}
+<div key={selectedView} className="view-container">
+        {selectedView === "todo" && <ActionItems userId={user.uid} days={days} />}
 
-      {selectedView === "budget" && (
-        <BudgetView
-          activities={Object.values(allActivitiesMap).flat()}
-          tripMembers={tripMembers}
-        />
-      )}
+        {selectedView === "budget" && (
+          <BudgetView
+            activities={Object.values(allActivitiesMap).flat()}
+            tripMembers={tripMembers}
+          />
+        )}
 
-      {selectedView === "map" && (
-        <MapView
-          activities={allActivities}
-          days={days}
-          onBackfill={async () => {
-            const result = await backfillCoordinates();
-            alert(`Done! Geocoded: ${result.geocoded}, Skipped: ${result.skipped}, Failed: ${result.failed}`);
-          }}
-        />
-      )}
+        {selectedView === "map" && (
+          <MapView
+            activities={allActivities}
+            days={days}
+            onBackfill={async () => {
+              const result = await backfillCoordinates();
+              alert(`Done! Geocoded: ${result.geocoded}, Skipped: ${result.skipped}, Failed: ${result.failed}`);
+            }}
+          />
+        )}
 
-      {selectedView === "day" && (
-      <>
-      {/* Color Legend */}
-      <div className="color-legend">
-        <div className="legend-item"><span className="legend-dot" style={{ background: "#FFD966" }}></span>Confirmed</div>
-        <div className="legend-item"><span className="legend-dot" style={{ background: "#FFEB3B" }}></span>New</div>
-        <div className="legend-item"><span className="legend-dot" style={{ background: "#A8D5A2" }}></span>Travel</div>
-        <div className="legend-item"><span className="legend-dot" style={{ background: "#FF9800" }}></span>Added</div>
-        <div className="legend-item"><span className="legend-dot" style={{ background: "#F9F9F9" }}></span>Free</div>
+        {selectedView === "day" && (
+          <>
+            <div className="color-legend">
+              <div className="legend-item"><span className="legend-dot" style={{ background: "#FFD966" }}></span>Confirmed</div>
+              <div className="legend-item"><span className="legend-dot" style={{ background: "#FFEB3B" }}></span>New</div>
+              <div className="legend-item"><span className="legend-dot" style={{ background: "#A8D5A2" }}></span>Travel</div>
+              <div className="legend-item"><span className="legend-dot" style={{ background: "#FF9800" }}></span>Added</div>
+              <div className="legend-item"><span className="legend-dot" style={{ background: "#F9F9F9" }}></span>Free</div>
+            </div>
+
+            {selectedDay && (
+              <>
+                <h2 className="day-heading">{selectedDay.labelFull || selectedDay.label}</h2>
+                <div className="activity-list">
+                  <TimelineView
+                    activities={groupedActivities}
+                    tripDate={selectedDay.date}
+                    onToggleComplete={(id, completed) => handleToggleComplete(id, completed)}
+                    onEdit={(activity) => setModalState(activity)}
+                    onAddAtTime={(time) => {
+                      setPrefilledTime(time);
+                      setModalState("add");
+                    }}
+                    tripMembers={tripMembers}
+                  />
+                </div>
+              </>
+            )}
+          </>
+        )}
       </div>
-
-      {selectedDay && (
-        <>
-          <h2 className="day-heading">{selectedDay.labelFull || selectedDay.label}</h2>
-
-          <div className="activity-list">
-            <TimelineView
-              activities={groupedActivities}
-              tripDate={selectedDay.date}
-              onToggleComplete={(id, completed) => handleToggleComplete(id, completed)}
-              onEdit={(activity) => setModalState(activity)}
-              onAddAtTime={(time) => {
-                setPrefilledTime(time);
-                setModalState("add");
-              }}
-              tripMembers={tripMembers}
-            />
-          </div>
-        </>
-      )}
-
-     
-</>
-      )}
       {/* Floating "+" button to add an activity */}
       {selectedView === "day" && (
         <button className="fab" onClick={() => setModalState("add")}>+</button>

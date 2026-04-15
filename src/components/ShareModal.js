@@ -21,6 +21,11 @@ export default function ShareModal({ onClose, currentUserId }) {
   const [collaborators, setCollaborators] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
   // Listen to the trip doc to keep sharedWith in sync
   useEffect(() => {
     const unsubscribe = onSnapshot(doc(db, "trips", TRIP_ID), async (tripSnap) => {

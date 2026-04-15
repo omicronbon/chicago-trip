@@ -20,6 +20,11 @@ const CATEGORIES = [
 function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime, tripMembers = [], currentUserId }) {
   const isEditing = !!activity;
 
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
   const [title, setTitle] = useState("");
   const [emoji, setEmoji] = useState("");
   const [time, setTime] = useState("12:00");
