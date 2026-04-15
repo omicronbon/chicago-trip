@@ -31,8 +31,8 @@ button, a, [role="button"], input[type="checkbox"] {
 .app-container {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  min-height: -webkit-fill-available;
+  height: 100vh;
+  height: -webkit-fill-available;
   max-width: 500px;
   margin: 0 auto;
   background: #F5F5F5;
@@ -43,6 +43,7 @@ button, a, [role="button"], input[type="checkbox"] {
 
 .main-content {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding-bottom: calc(70px + env(safe-area-inset-bottom));
@@ -693,7 +694,8 @@ button, a, [role="button"], input[type="checkbox"] {
 .map-wrapper {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
 }
 
