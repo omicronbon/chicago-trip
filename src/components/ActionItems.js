@@ -24,7 +24,6 @@ export default function ActionItems({ userId, days }) {
   const [selectedTime, setSelectedTime] = useState("12:00");
   const [selectedDuration, setSelectedDuration] = useState(60);
 
-  // Listen to action items
   useEffect(() => {
     const q = query(
       collection(db, "trips", TRIP_ID, "actionItems"),
@@ -36,7 +35,6 @@ export default function ActionItems({ userId, days }) {
     return () => unsubscribe();
   }, []);
 
-  // Listen to overflow items
   useEffect(() => {
     const unsubscribe = onSnapshot(
       collection(db, "trips", TRIP_ID, "overflow"),
@@ -47,7 +45,6 @@ export default function ActionItems({ userId, days }) {
     return () => unsubscribe();
   }, []);
 
-  // --- Action Items CRUD ---
   async function handleAdd() {
     const trimmed = newTitle.trim();
     if (!trimmed) return;
@@ -72,7 +69,6 @@ export default function ActionItems({ userId, days }) {
     await deleteDoc(doc(db, "trips", TRIP_ID, "actionItems", itemId));
   }
 
-  // --- Overflow CRUD ---
   async function handleAddOverflow() {
     const trimmed = newOverflow.trim();
     if (!trimmed) return;
@@ -88,7 +84,6 @@ export default function ActionItems({ userId, days }) {
     await deleteDoc(doc(db, "trips", TRIP_ID, "overflow", itemId));
   }
 
-  // --- Schedule an overflow item to a day ---
   async function handleSchedule() {
     if (!selectedDayId || !scheduleItem) return;
     await addDoc(
@@ -117,7 +112,6 @@ export default function ActionItems({ userId, days }) {
 
   return (
     <div style={{ padding: "0 16px" }}>
-      {/* ---- ACTION ITEMS ---- */}
       <h2 className="day-heading">Pre-Trip To Do</h2>
 
       <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
@@ -131,9 +125,9 @@ export default function ActionItems({ userId, days }) {
             flex: 1,
             padding: "12px",
             borderRadius: "8px",
-            border: "1px solid #444",
-            background: "#1e1e2e",
-            color: "#fff",
+            border: "1px solid #DDD",
+            background: "#FFFFFF",
+            color: "#222",
             fontSize: "16px",
           }}
         />
@@ -143,7 +137,7 @@ export default function ActionItems({ userId, days }) {
             padding: "12px 18px",
             borderRadius: "8px",
             border: "none",
-            background: "#4285f4",
+            background: "#4A90D9",
             color: "white",
             fontWeight: "bold",
             fontSize: "16px",
@@ -169,9 +163,9 @@ export default function ActionItems({ userId, days }) {
             gap: "12px",
             padding: "12px",
             marginBottom: "8px",
-            background: "#2a2a3d",
+            background: "#FFFFFF",
             borderRadius: "10px",
-            borderLeft: "4px solid #4285f4",
+            borderLeft: "4px solid #4A90D9",
           }}
         >
           <input
@@ -180,7 +174,7 @@ export default function ActionItems({ userId, days }) {
             onChange={() => handleToggle(item)}
             style={{ width: "22px", height: "22px", cursor: "pointer" }}
           />
-          <span style={{ flex: 1, fontSize: "16px", color: "#fff" }}>
+          <span style={{ flex: 1, fontSize: "16px", color: "#222" }}>
             {item.title}
           </span>
           <button
@@ -188,7 +182,7 @@ export default function ActionItems({ userId, days }) {
             style={{
               background: "none",
               border: "none",
-              color: "#888",
+              color: "#999",
               fontSize: "18px",
               cursor: "pointer",
             }}
@@ -200,7 +194,7 @@ export default function ActionItems({ userId, days }) {
 
       {completed.length > 0 && (
         <>
-          <h3 style={{ color: "#888", fontSize: "14px", margin: "20px 0 8px" }}>
+          <h3 style={{ color: "#999", fontSize: "14px", margin: "20px 0 8px" }}>
             Completed ({completed.length})
           </h3>
           {completed.map((item) => (
@@ -212,7 +206,7 @@ export default function ActionItems({ userId, days }) {
                 gap: "12px",
                 padding: "12px",
                 marginBottom: "8px",
-                background: "#1e1e2e",
+                background: "#FAFAFA",
                 borderRadius: "10px",
                 opacity: 0.6,
               }}
@@ -227,7 +221,7 @@ export default function ActionItems({ userId, days }) {
                 style={{
                   flex: 1,
                   fontSize: "16px",
-                  color: "#888",
+                  color: "#999",
                   textDecoration: "line-through",
                 }}
               >
@@ -238,7 +232,7 @@ export default function ActionItems({ userId, days }) {
                 style={{
                   background: "none",
                   border: "none",
-                  color: "#888",
+                  color: "#999",
                   fontSize: "18px",
                   cursor: "pointer",
                 }}
@@ -250,7 +244,6 @@ export default function ActionItems({ userId, days }) {
         </>
       )}
 
-      {/* ---- IF TIME PERMITS ---- */}
       <h2 className="day-heading" style={{ marginTop: "32px" }}>
         If Time Permits
       </h2>
@@ -266,9 +259,9 @@ export default function ActionItems({ userId, days }) {
             flex: 1,
             padding: "12px",
             borderRadius: "8px",
-            border: "1px solid #444",
-            background: "#1e1e2e",
-            color: "#fff",
+            border: "1px solid #DDD",
+            background: "#FFFFFF",
+            color: "#222",
             fontSize: "16px",
           }}
         />
@@ -302,18 +295,18 @@ export default function ActionItems({ userId, days }) {
           style={{
             padding: "14px",
             marginBottom: "8px",
-            background: "#2a2a3d",
+            background: "#FFFFFF",
             borderRadius: "10px",
             borderLeft: "4px solid #FF9800",
             cursor: "pointer",
           }}
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontSize: "16px", color: "#fff" }}>
+            <span style={{ fontSize: "16px", color: "#222" }}>
               {item.emoji} {item.title}
             </span>
             <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-              <span style={{ fontSize: "12px", color: "#888" }}>Tap to schedule</span>
+              <span style={{ fontSize: "12px", color: "#999" }}>Tap to schedule</span>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -322,7 +315,7 @@ export default function ActionItems({ userId, days }) {
                 style={{
                   background: "none",
                   border: "none",
-                  color: "#888",
+                  color: "#999",
                   fontSize: "18px",
                   cursor: "pointer",
                 }}
@@ -339,11 +332,10 @@ export default function ActionItems({ userId, days }) {
         </div>
       ))}
 
-      {/* ---- SCHEDULE MODAL ---- */}
       {scheduleItem && (
         <div className="modal-overlay" onClick={() => setScheduleItem(null)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h2>Schedule: {scheduleItem.emoji} {scheduleItem.title}</h2>
+            <h2 className="modal-title">Schedule: {scheduleItem.emoji} {scheduleItem.title}</h2>
 
             <label className="modal-label">
               Day

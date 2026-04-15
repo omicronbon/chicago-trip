@@ -145,7 +145,7 @@ export default function TimelineView({
                 left: 0,
                 right: 0,
                 top: `${top}px`,
-                borderTop: "1px solid #333",
+                borderTop: "1px solid #E0E0E0",
               }}
             />
           </div>

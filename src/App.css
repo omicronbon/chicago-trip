@@ -1,7 +1,4 @@
-/* App.css
-   Mobile-first styles for the Chicago trip app.
-   Designed to be readable at a glance while walking around a city.
-   Touch targets are at least 44px for easy tapping. */
+/* App.css — Light theme, mobile-first */
 
 /* ---- Reset & Base ---- */
 * {
@@ -12,12 +9,13 @@
 
 html, body {
   overscroll-behavior-y: contain;
+  background: #F5F5F5;
 }
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background: #1a1a2e;
-  color: #e0e0e0;
+  background: #F5F5F5;
+  color: #222;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -37,6 +35,7 @@ button, a, [role="button"], input[type="checkbox"] {
   min-height: -webkit-fill-available;
   max-width: 500px;
   margin: 0 auto;
+  background: #F5F5F5;
   padding-top: env(safe-area-inset-top);
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
@@ -47,7 +46,15 @@ button, a, [role="button"], input[type="checkbox"] {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding-bottom: calc(70px + env(safe-area-inset-bottom));
+  background: #F5F5F5;
   animation: viewFade 0.15s ease-in;
+}
+
+.main-content.map-active {
+  overflow: hidden;
+  padding-bottom: calc(56px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
 }
 
 @keyframes viewFade {
@@ -60,18 +67,20 @@ button, a, [role="button"], input[type="checkbox"] {
   text-align: center;
   padding: 24px 16px 8px;
   position: relative;
+  background: #FFFFFF;
+  border-bottom: 1px solid #E0E0E0;
 }
 
 .app-header h1 {
   font-size: 28px;
   font-weight: 700;
-  color: #ffffff;
+  color: #222;
   letter-spacing: -0.5px;
 }
 
 .trip-dates {
   font-size: 14px;
-  color: #8888aa;
+  color: #888;
   margin-top: 4px;
 }
 
@@ -190,7 +199,7 @@ button, a, [role="button"], input[type="checkbox"] {
 .day-heading {
   font-size: 18px;
   font-weight: 600;
-  color: #ccccee;
+  color: #222;
   padding: 8px 16px 4px;
 }
 
@@ -209,7 +218,7 @@ button, a, [role="button"], input[type="checkbox"] {
   justify-content: space-between;
   padding: 10px 12px;
   border-radius: 8px;
-  background: #2a2a40;
+  background: #FFFFFF;
   border-left: 5px solid #888;
   transition: opacity 0.3s ease, transform 0.3s ease;
   -webkit-user-select: none;
@@ -236,8 +245,8 @@ button, a, [role="button"], input[type="checkbox"] {
 
 /* ---- Checkbox button ---- */
 .check-btn {
-  background: #1a1a2e;
-  border: 2px solid #3a3a55;
+  background: #F5F5F5;
+  border: 2px solid #DDD;
   border-radius: 50%;
   font-size: 16px;
   cursor: pointer;
@@ -254,8 +263,8 @@ button, a, [role="button"], input[type="checkbox"] {
 }
 
 .check-btn.checked {
-  background: #4a6cf7;
-  border-color: #4a6cf7;
+  background: #4A90D9;
+  border-color: #4A90D9;
 }
 
 .checkmark {
@@ -264,7 +273,7 @@ button, a, [role="button"], input[type="checkbox"] {
   line-height: 1;
 }
 
-/* ---- Activity content (time, title, notes) ---- */
+/* ---- Activity content ---- */
 .activity-content {
   flex: 1;
   min-width: 0;
@@ -280,19 +289,19 @@ button, a, [role="button"], input[type="checkbox"] {
 .activity-time {
   font-size: 13px;
   font-weight: 700;
-  color: #8888bb;
+  color: #666;
   white-space: nowrap;
 }
 
 .activity-title {
   font-size: 15px;
   font-weight: 600;
-  color: #eeeeff;
+  color: #222;
 }
 
 .activity-notes {
   font-size: 12px;
-  color: #8888aa;
+  color: #888;
   margin-top: 3px;
   line-height: 1.4;
 }
@@ -321,20 +330,20 @@ button, a, [role="button"], input[type="checkbox"] {
 .overflow-section {
   margin: 20px 12px;
   padding: 16px;
-  background: #22223a;
+  background: #FFFFFF;
   border-radius: 10px;
-  border: 1px dashed #444466;
+  border: 1px dashed #DDD;
 }
 
 .overflow-section h3 {
   font-size: 15px;
-  color: #8888bb;
+  color: #666;
   margin-bottom: 12px;
 }
 
 .overflow-item {
   padding: 8px 0;
-  border-bottom: 1px solid #2a2a40;
+  border-bottom: 1px solid #F0F0F0;
 }
 
 .overflow-item:last-child {
@@ -344,7 +353,7 @@ button, a, [role="button"], input[type="checkbox"] {
 .overflow-item span {
   font-size: 15px;
   font-weight: 600;
-  color: #ccccdd;
+  color: #333;
 }
 
 /* ---- Modal Overlay ---- */
@@ -400,9 +409,8 @@ button, a, [role="button"], input[type="checkbox"] {
   position: sticky;
   top: -20px;
   background: #FFFFFF;
-  padding: 20px 0 8px;
-  margin: -20px -20px 12px;
   padding: 20px 20px 8px;
+  margin: -20px -20px 12px;
   z-index: 1;
 }
 
@@ -482,12 +490,12 @@ button, a, [role="button"], input[type="checkbox"] {
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: #4a6cf7;
+  background: #4A90D9;
   color: #ffffff;
   font-size: 28px;
   border: none;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(74, 108, 247, 0.4);
+  box-shadow: 0 4px 12px rgba(74, 144, 217, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -502,18 +510,19 @@ button, a, [role="button"], input[type="checkbox"] {
   justify-content: center;
   min-height: 100vh;
   padding: 24px;
+  background: #F5F5F5;
 }
 
 .login-screen h1 {
   font-size: 32px;
-  color: #ffffff;
+  color: #222;
   margin-bottom: 8px;
 }
 
 .login-btn {
   margin-top: 32px;
   padding: 14px 28px;
-  background: #4a6cf7;
+  background: #4A90D9;
   color: #ffffff;
   border: none;
   border-radius: 10px;
@@ -526,9 +535,9 @@ button, a, [role="button"], input[type="checkbox"] {
 .signout-btn {
   padding: 4px 10px;
   background: none;
-  border: 1px solid #3a3a55;
+  border: 1px solid #DDD;
   border-radius: 6px;
-  color: #666688;
+  color: #666;
   font-size: 11px;
   cursor: pointer;
 }
@@ -537,8 +546,8 @@ button, a, [role="button"], input[type="checkbox"] {
 .activity-duration {
   font-size: 11px;
   font-weight: 600;
-  color: #4a6cf7;
-  background: rgba(74, 108, 247, 0.15);
+  color: #4A90D9;
+  background: rgba(74, 144, 217, 0.1);
   padding: 1px 6px;
   border-radius: 4px;
   margin-left: 4px;
@@ -556,14 +565,14 @@ button, a, [role="button"], input[type="checkbox"] {
 .empty-hour-time {
   font-size: 13px;
   font-weight: 600;
-  color: #555577;
+  color: #999;
   width: 75px;
 }
 
 .empty-hour-line {
   flex: 1;
   height: 1px;
-  background: #333355;
+  background: #DDD;
   margin-left: 8px;
 }
 
@@ -581,7 +590,7 @@ button, a, [role="button"], input[type="checkbox"] {
   align-items: center;
   gap: 4px;
   font-size: 10px;
-  color: #666688;
+  color: #666;
 }
 
 .legend-dot {
@@ -595,17 +604,17 @@ button, a, [role="button"], input[type="checkbox"] {
 .empty-state {
   text-align: center;
   padding: 40px 16px;
-  color: #555577;
+  color: #999;
   font-size: 15px;
 }
 
 /* ---- Navigate icon ---- */
 .nav-icon {
   font-size: 18px;
-  color: #8888aa;
+  color: #888;
 }
 
-/* Timeline layout */
+/* ---- Timeline layout ---- */
 .timeline-container {
   margin-top: 8px;
   margin-bottom: 80px;
@@ -684,51 +693,52 @@ button, a, [role="button"], input[type="checkbox"] {
 .map-wrapper {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 130px);
+  height: 100%;
+  overflow: hidden;
 }
 
 .map-filter-bar {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 16px;
-  background: #1a1a2e;
-  position: relative;
-  z-index: 500;
+  padding: 8px 12px;
+  background: #FFFFFF;
+  border-bottom: 1px solid #E0E0E0;
   flex-shrink: 0;
 }
 
 .map-filter-pills {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   flex: 1;
 }
 
 .map-pill {
-  padding: 6px 14px;
+  padding: 5px 12px;
   border-radius: 16px;
-  border: none;
-  background: #2a2a40;
-  color: #aaaacc;
+  border: 1px solid #E0E0E0;
+  background: #FFFFFF;
+  color: #666;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
-  min-height: 34px;
+  min-height: 32px;
   min-width: 44px;
   transition: background 0.15s ease, color 0.15s ease;
 }
 
 .map-pill.active {
-  background: #4a6cf7;
+  background: #4A90D9;
   color: #ffffff;
+  border-color: #4A90D9;
 }
 
 .map-counter {
   font-size: 11px;
-  color: #555577;
+  color: #999;
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -737,6 +747,63 @@ button, a, [role="button"], input[type="checkbox"] {
   flex: 1;
   min-height: 0;
   width: 100%;
+}
+
+/* ---- Map Card Strip ---- */
+.map-card-strip {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  background: #F5F5F5;
+  border-top: 1px solid #E0E0E0;
+  max-height: 100px;
+  flex-shrink: 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.map-card-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.map-card {
+  min-width: 160px;
+  max-width: 200px;
+  background: #FFFFFF;
+  border-radius: 10px;
+  padding: 10px 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+  border-left: 3px solid #888;
+  cursor: pointer;
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+
+.map-card.selected {
+  box-shadow: 0 0 0 2px #4A90D9, 0 2px 8px rgba(74, 144, 217, 0.3);
+}
+
+.map-card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #222;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.map-card-time {
+  font-size: 11px;
+  color: #666;
+  margin-top: 2px;
+}
+
+.map-card-day {
+  font-size: 10px;
+  color: #999;
+  margin-top: 1px;
 }
 
 /* ---- Budget View ---- */
@@ -842,7 +909,7 @@ button:active {
   opacity: 0.7;
 }
 
-/* ---- Desktop: slightly wider cards ---- */
+/* ---- Desktop ---- */
 @media (min-width: 600px) {
   .app-container {
     padding: 0 16px;

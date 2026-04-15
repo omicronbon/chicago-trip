@@ -247,7 +247,7 @@ function App() {
         />
       )}
 
-      <div key={activeSection} className="main-content">
+      <div key={activeSection} className={`main-content${activeSection === "map" ? " map-active" : ""}`}>
         {activeSection === "itinerary" && (
           <>
             <div className="color-legend">
