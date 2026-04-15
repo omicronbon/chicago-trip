@@ -7,7 +7,8 @@
   box-sizing: border-box;
 }
 
-html, body {
+html, body, #root {
+  height: 100%;
   overscroll-behavior-y: contain;
   background: #F5F5F5;
 }
@@ -31,8 +32,7 @@ button, a, [role="button"], input[type="checkbox"] {
 .app-container {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  height: -webkit-fill-available;
+  height: 100%;
   max-width: 500px;
   margin: 0 auto;
   background: #F5F5F5;
