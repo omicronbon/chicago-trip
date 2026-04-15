@@ -601,6 +601,53 @@ body {
   width: 100%;
 }
 
+/* ---- Budget View ---- */
+.budget-view {
+  padding: 16px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.budget-card {
+  border: 1px solid #E0E0E0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  background: #fff;
+}
+
+.budget-card h3 {
+  margin: 0 0 8px 0;
+  font-size: 1rem;
+}
+
+.budget-total {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.budget-member-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid #F0F0F0;
+}
+
+.budget-member-row:last-child {
+  border-bottom: none;
+}
+
+.settle-row {
+  padding: 8px 0;
+  font-size: 0.95rem;
+}
+
+.budget-empty {
+  text-align: center;
+  color: #999;
+  padding: 40px 16px;
+}
+
 /* ---- Activity Cost ---- */
 .activity-cost {
   font-size: 0.8rem;

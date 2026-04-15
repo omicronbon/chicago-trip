@@ -24,6 +24,7 @@ import ShareModal from "./components/ShareModal";
 import ActionItems from "./components/ActionItems";
 import TimelineView from "./components/TimelineView";
 import MapView from "./components/MapView";
+import BudgetView from "./components/BudgetView";
 import { backfillCoordinates } from "./utils/backfillCoordinates";
 
 const TRIP_ID = "chicago-april-2026";
@@ -275,6 +276,13 @@ if (!user) {
       />
 
 {selectedView === "todo" && <ActionItems userId={user.uid} days={days} />}
+
+      {selectedView === "budget" && (
+        <BudgetView
+          activities={Object.values(allActivitiesMap).flat()}
+          tripMembers={tripMembers}
+        />
+      )}
 
       {selectedView === "map" && (
         <MapView

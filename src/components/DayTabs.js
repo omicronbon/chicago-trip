@@ -109,6 +109,12 @@ function DayTabs({
         >
           <span className="tab-label">📍 Map</span>
         </button>
+        <button
+          className={`day-tab ${selectedView === "budget" ? "active" : ""}`}
+          onClick={() => onSelectView("budget")}
+        >
+          <span className="tab-label">💰 Budget</span>
+        </button>
       </div>
     </>
   );
