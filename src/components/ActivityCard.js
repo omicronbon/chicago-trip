@@ -29,6 +29,12 @@ function handleNavigate(address) {
   );
 }
 
+const triggerHaptic = () => {
+  if (navigator.vibrate) {
+    navigator.vibrate(50);
+  }
+};
+
 function ActivityCard({ activity, onToggleComplete, onEdit }) {
   const bgColor = CATEGORY_COLORS[activity.category] || "#F9F9F9";
 
@@ -47,7 +53,10 @@ function ActivityCard({ activity, onToggleComplete, onEdit }) {
       <div className="activity-main">
         <button
           className={`check-btn ${activity.completed ? "checked" : ""}`}
-          onClick={onToggleComplete}
+          onClick={() => {
+            triggerHaptic();
+            onToggleComplete();
+          }}
           aria-label={activity.completed ? "Mark incomplete" : "Mark complete"}
         >
           {activity.completed && <span className="checkmark">✓</span>}
