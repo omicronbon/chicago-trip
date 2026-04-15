@@ -13,7 +13,8 @@ import {
   getDoc,
   serverTimestamp,
 } from "firebase/firestore";
-import DayTabs from "./components/DayTabs";
+import BottomNav from "./components/BottomNav";
+import DaySelector from "./components/DaySelector";
 import ActivityModal from "./components/ActivityModal";
 import groupActivities from "./utils/groupActivities";
 import "./App.css";
@@ -33,21 +34,17 @@ function App() {
   const [days, setDays] = useState([]);
   const [activities, setActivities] = useState([]);
   const [selectedDayId, setSelectedDayId] = useState(null);
-  const [selectedView, setSelectedView] = useState("todo");
+  const [activeSection, setActiveSection] = useState("itinerary");
   const [loading, setLoading] = useState(true);
 
-  // Modal state: null = closed, "add" = adding, activity object = editing
   const [modalState, setModalState] = useState(null);
   const [showShareModal, setShowShareModal] = useState(false);
   const [prefilledTime, setPrefilledTime] = useState(null);
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
-  // All activities across all days, keyed by dayId — used for the map view
   const [allActivitiesMap, setAllActivitiesMap] = useState({});
   const [tripMembers, setTripMembers] = useState([]);
 
-  // --- AUTH LISTENER ---
-  // Checks if the user is logged in. Runs once on mount.
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
@@ -63,7 +60,6 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  // --- FETCH TRIP MEMBERS ---
   useEffect(() => {
     if (!user) return;
 
@@ -89,7 +85,6 @@ function App() {
     return () => unsubscribe();
   }, [user]);
 
-  // --- LISTENER 1: Days ---
   useEffect(() => {
     if (!user) return;
 
@@ -111,7 +106,6 @@ function App() {
     return () => unsubscribe();
   }, [user]);
 
-  // --- LISTENER 2: Activities for selected day ---
   useEffect(() => {
     if (!user || !selectedDayId) return;
 
@@ -128,7 +122,6 @@ function App() {
     return () => unsubscribe();
   }, [user, selectedDayId]);
 
-  // --- LISTENER 3: All activities across all days (for map view) ---
   useEffect(() => {
     if (!user || days.length === 0) return;
 
@@ -146,15 +139,11 @@ function App() {
     return () => unsubscribes.forEach((fn) => fn());
   }, [user, days]);
 
-  // --- TOGGLE COMPLETE ---
   async function handleToggleComplete(activityId, currentStatus) {
     const newStatus = !currentStatus;
-
-    // Find the grouped activity to get any child IDs
     const grouped = groupedActivities.find((a) => a.id === activityId);
     const idsToToggle = [activityId, ...(grouped?.childIds || [])];
 
-    // Toggle the parent and all continuation entries
     await Promise.all(
       idsToToggle.map((id) => {
         const activityDoc = doc(
@@ -165,10 +154,8 @@ function App() {
     );
   }
 
-  // --- SAVE (handles both add and edit) ---
   async function handleSave(formData) {
     if (modalState === "add") {
-      // Add a new activity document to Firestore
       const activitiesRef = collection(
         db, "trips", TRIP_ID, "days", selectedDayId, "activities"
       );
@@ -180,7 +167,6 @@ function App() {
         updatedAt: serverTimestamp(),
       });
     } else {
-      // Edit an existing activity
       const activityDoc = doc(
         db, "trips", TRIP_ID, "days", selectedDayId, "activities", modalState.id
       );
@@ -194,7 +180,6 @@ function App() {
     setPrefilledTime(null);
   }
 
-  // --- DELETE ---
   async function handleDelete(activityId) {
     const activityDoc = doc(
       db, "trips", TRIP_ID, "days", selectedDayId, "activities", activityId
@@ -204,18 +189,9 @@ function App() {
   }
 
   const selectedDay = days.find((d) => d.id === selectedDayId);
-  // Compute progress for current day's activities
-  const dayProgress = {};
-  if (selectedDayId && activities.length > 0) {
-    const total = activities.length;
-    const done = activities.filter((a) => a.completed).length;
-    dayProgress[selectedDayId] = total > 0 ? Math.round((done / total) * 100) : 0;
-  }
 
-  // Group "(cont.)" activities into multi-hour blocks
   const groupedActivities = groupActivities(activities);
 
-  // Flatten all activities across all days for the map view, enriched with day info
   const allActivities = days.flatMap((day) =>
     (allActivitiesMap[day.id] || []).map((act) => ({
       ...act,
@@ -224,33 +200,33 @@ function App() {
     }))
   );
 
- // Show login screen if not authenticated
- if (authLoading) {
-  return (
-    <div className="app">
-      <p style={{ textAlign: "center", marginTop: "4rem" }}>Loading...</p>
-    </div>
-  );
-}
+  if (authLoading) {
+    return (
+      <div className="app-container">
+        <p style={{ textAlign: "center", marginTop: "4rem", color: "#e0e0e0" }}>Loading...</p>
+      </div>
+    );
+  }
 
-if (!user) {
-  return <LoginScreen />;
-}
+  if (!user) {
+    return <LoginScreen />;
+  }
+
   if (loading) {
     return (
-      <div className="app">
+      <div className="app-container">
         <header className="app-header">
           <h1>Chicago 🌆</h1>
           <p className="trip-dates">April 17–20, 2026</p>
         </header>
-        <p style={{ textAlign: "center", marginTop: "2rem" }}>Loading...</p>
+        <p style={{ textAlign: "center", marginTop: "2rem", color: "#e0e0e0" }}>Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="app">
-     <header className="app-header">
+    <div className="app-container">
+      <header className="app-header">
         <h1>Chicago 🌆</h1>
         <p className="trip-dates">April 17–20, 2026</p>
         <div style={{ position: "absolute", top: "16px", right: "16px", display: "flex", gap: "8px" }}>
@@ -263,40 +239,16 @@ if (!user) {
         </div>
       </header>
 
-      <DayTabs
-        days={days}
-        selectedDayId={selectedDayId}
-        onSelectDay={setSelectedDayId}
-        selectedView={selectedView}
-        onSelectView={setSelectedView}
-        tripStartDate="2026-04-17"
-        dayProgress={dayProgress}
-        onSelectMap={() => setSelectedView("map")}
-        activitiesMap={allActivitiesMap}
-      />
+      {activeSection === "itinerary" && (
+        <DaySelector
+          days={days}
+          selectedDayId={selectedDayId}
+          onDaySelect={setSelectedDayId}
+        />
+      )}
 
-<div key={selectedView} className="view-container">
-        {selectedView === "todo" && <ActionItems userId={user.uid} days={days} />}
-
-        {selectedView === "budget" && (
-          <BudgetView
-            activities={Object.values(allActivitiesMap).flat()}
-            tripMembers={tripMembers}
-          />
-        )}
-
-        {selectedView === "map" && (
-          <MapView
-            activities={allActivities}
-            days={days}
-            onBackfill={async () => {
-              const result = await backfillCoordinates();
-              alert(`Done! Geocoded: ${result.geocoded}, Skipped: ${result.skipped}, Failed: ${result.failed}`);
-            }}
-          />
-        )}
-
-        {selectedView === "day" && (
+      <div key={activeSection} className="main-content">
+        {activeSection === "itinerary" && (
           <>
             <div className="color-legend">
               <div className="legend-item"><span className="legend-dot" style={{ background: "#FFD966" }}></span>Confirmed</div>
@@ -326,13 +278,32 @@ if (!user) {
             )}
           </>
         )}
+
+        {activeSection === "map" && (
+          <MapView
+            activities={allActivities}
+            days={days}
+            onBackfill={async () => {
+              const result = await backfillCoordinates();
+              alert(`Done! Geocoded: ${result.geocoded}, Skipped: ${result.skipped}, Failed: ${result.failed}`);
+            }}
+          />
+        )}
+
+        {activeSection === "budget" && (
+          <BudgetView
+            activities={Object.values(allActivitiesMap).flat()}
+            tripMembers={tripMembers}
+          />
+        )}
+
+        {activeSection === "todo" && <ActionItems userId={user.uid} days={days} />}
       </div>
-      {/* Floating "+" button to add an activity */}
-      {selectedView === "day" && (
+
+      {activeSection === "itinerary" && (
         <button className="fab" onClick={() => setModalState("add")}>+</button>
       )}
 
-      {/* Modal for adding/editing */}
       {showShareModal && (
         <ShareModal
           onClose={() => setShowShareModal(false)}
@@ -350,6 +321,11 @@ if (!user) {
           currentUserId={user.uid}
         />
       )}
+
+      <BottomNav
+        activeSection={activeSection}
+        onSectionChange={setActiveSection}
+      />
     </div>
   );
 }

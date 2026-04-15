@@ -29,14 +29,30 @@ button, a, [role="button"], input[type="checkbox"] {
   -webkit-tap-highlight-color: transparent;
 }
 
-.app {
+/* ---- App Container ---- */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
   max-width: 500px;
   margin: 0 auto;
-  padding: 0 0 80px; /* Extra bottom padding so last card isn't cut off */
   padding-top: env(safe-area-inset-top);
-  padding-bottom: calc(80px + env(safe-area-inset-bottom));
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
+}
+
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(70px + env(safe-area-inset-bottom));
+  animation: viewFade 0.15s ease-in;
+}
+
+@keyframes viewFade {
+  from { opacity: 0.6; }
+  to { opacity: 1; }
 }
 
 /* ---- Header ---- */
@@ -59,39 +75,115 @@ button, a, [role="button"], input[type="checkbox"] {
   margin-top: 4px;
 }
 
-/* ---- Day Tabs ---- */
-.day-tabs {
+/* ---- Bottom Nav ---- */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #FFFFFF;
+  border-top: 1px solid #E0E0E0;
+  height: calc(56px + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 1000;
   display: flex;
-  gap: 6px;
-  padding: 12px 16px;
-  overflow-x: auto;          /* Scrolls if there are many days */
-  -webkit-overflow-scrolling: touch;
-  scroll-snap-type: x mandatory;
+  justify-content: space-around;
+  align-items: center;
 }
 
-.day-tab {
-  flex: 1;
-  flex-shrink: 0;
-  min-width: 70px;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 10px;
-  background: #2a2a40;
-  color: #aaaacc;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 64px;
   min-height: 44px;
-  scroll-snap-align: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #999;
+  -webkit-tap-highlight-color: transparent;
   -webkit-user-select: none;
   user-select: none;
+  transition: color 0.15s;
+  padding: 4px 0;
 }
 
-.day-tab.active {
-  background: #4a6cf7;
-  color: #ffffff;
-  box-shadow: 0 2px 8px rgba(74, 108, 247, 0.35);
+.bottom-nav-item.active {
+  color: #4A90D9;
+}
+
+.bottom-nav-emoji {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.bottom-nav-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* ---- Day Selector ---- */
+.day-selector {
+  position: sticky;
+  top: 0;
+  display: flex;
+  gap: 8px;
+  padding: 8px 12px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  background: #FFFFFF;
+  border-bottom: 1px solid #E0E0E0;
+  z-index: 100;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.day-selector::-webkit-scrollbar {
+  display: none;
+}
+
+.day-pill {
+  min-width: 80px;
+  text-align: center;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  background: #FFFFFF;
+  color: #333;
+  border: 1px solid #E0E0E0;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 44px;
+  justify-content: center;
+}
+
+.day-pill.active {
+  background: #4A90D9;
+  color: #FFFFFF;
+  border-color: #4A90D9;
+}
+
+.day-pill-today-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #e53935;
+  margin-top: 2px;
+}
+
+.day-pill.active .day-pill-today-dot {
+  background: #FFFFFF;
 }
 
 /* ---- Day Heading ---- */
@@ -124,7 +216,6 @@ button, a, [role="button"], input[type="checkbox"] {
   user-select: none;
 }
 
-/* When an activity is checked off, dim and shrink it */
 .activity-card.completed {
   opacity: 0.4;
   transform: scale(0.98);
@@ -140,7 +231,7 @@ button, a, [role="button"], input[type="checkbox"] {
   align-items: flex-start;
   gap: 10px;
   flex: 1;
-  min-width: 0; /* Prevents flex children from overflowing */
+  min-width: 0;
 }
 
 /* ---- Checkbox button ---- */
@@ -213,7 +304,7 @@ button, a, [role="button"], input[type="checkbox"] {
   font-size: 22px;
   cursor: pointer;
   padding: 4px 4px 4px 8px;
-  min-width: 44px;  /* Touch target */
+  min-width: 44px;
   min-height: 44px;
   display: flex;
   align-items: center;
@@ -256,12 +347,6 @@ button, a, [role="button"], input[type="checkbox"] {
   color: #ccccdd;
 }
 
-/* ---- Desktop: slightly wider cards ---- */
-@media (min-width: 600px) {
-  .app {
-    padding: 0 16px 80px;
-  }
-}
 /* ---- Modal Overlay ---- */
 .modal-overlay {
   position: fixed;
@@ -269,11 +354,12 @@ button, a, [role="button"], input[type="checkbox"] {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
-  align-items: flex-end;        /* Slides up from bottom on mobile */
+  align-items: center;
   justify-content: center;
-  z-index: 100;
+  z-index: 2000;
+  padding: 16px;
   animation: fadeIn 0.2s ease-out;
 }
 
@@ -283,20 +369,21 @@ button, a, [role="button"], input[type="checkbox"] {
 }
 
 .modal-content {
-  background: #22223a;
+  background: #FFFFFF;
   width: 100%;
-  max-width: 500px;
-  max-height: 85vh;
+  max-width: 400px;
+  max-height: 80vh;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  border-radius: 16px 16px 0 0;
-  padding: 24px 20px 32px;
+  border-radius: 16px;
+  padding: 20px;
+  position: relative;
   animation: slideUp 0.25s ease-out;
 }
 
 @keyframes slideUp {
   from {
-    transform: translateY(100px);
+    transform: translateY(40px);
     opacity: 0;
   }
   to {
@@ -308,15 +395,22 @@ button, a, [role="button"], input[type="checkbox"] {
 .modal-title {
   font-size: 18px;
   font-weight: 700;
-  color: #ffffff;
+  color: #222;
   margin-bottom: 16px;
+  position: sticky;
+  top: -20px;
+  background: #FFFFFF;
+  padding: 20px 0 8px;
+  margin: -20px -20px 12px;
+  padding: 20px 20px 8px;
+  z-index: 1;
 }
 
 .modal-label {
   display: block;
   font-size: 12px;
   font-weight: 600;
-  color: #8888aa;
+  color: #888;
   margin-bottom: 12px;
 }
 
@@ -325,10 +419,10 @@ button, a, [role="button"], input[type="checkbox"] {
   width: 100%;
   margin-top: 4px;
   padding: 10px 12px;
-  border: 1px solid #3a3a55;
+  border: 1px solid #DDD;
   border-radius: 8px;
-  background: #1a1a2e;
-  color: #eeeeff;
+  background: #FAFAFA;
+  color: #222;
   font-size: 15px;
   font-family: inherit;
   min-height: 44px;
@@ -336,7 +430,7 @@ button, a, [role="button"], input[type="checkbox"] {
 
 .modal-input:focus {
   outline: none;
-  border-color: #4a6cf7;
+  border-color: #4A90D9;
 }
 
 .modal-input-short {
@@ -366,7 +460,7 @@ button, a, [role="button"], input[type="checkbox"] {
 }
 
 .modal-btn-save {
-  background: #4a6cf7;
+  background: #4A90D9;
   color: #ffffff;
 }
 
@@ -376,14 +470,14 @@ button, a, [role="button"], input[type="checkbox"] {
 }
 
 .modal-btn-cancel {
-  background: #2a2a40;
-  color: #8888aa;
+  background: #F0F0F0;
+  color: #666;
 }
 
 /* ---- Floating Add Button ---- */
 .fab {
   position: fixed;
-  bottom: 24px;
+  bottom: calc(70px + env(safe-area-inset-bottom));
   right: 24px;
   width: 56px;
   height: 56px;
@@ -399,6 +493,7 @@ button, a, [role="button"], input[type="checkbox"] {
   justify-content: center;
   z-index: 50;
 }
+
 /* ---- Login Screen ---- */
 .login-screen {
   display: flex;
@@ -509,6 +604,7 @@ button, a, [role="button"], input[type="checkbox"] {
   font-size: 18px;
   color: #8888aa;
 }
+
 /* Timeline layout */
 .timeline-container {
   margin-top: 8px;
@@ -544,10 +640,10 @@ button, a, [role="button"], input[type="checkbox"] {
   top: 100%;
   left: 0;
   right: 0;
-  background: #22223a;
-  border: 1px solid #3a3a55;
+  background: #FFFFFF;
+  border: 1px solid #DDD;
   border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   max-height: 200px;
   overflow-y: auto;
   z-index: 200;
@@ -556,7 +652,7 @@ button, a, [role="button"], input[type="checkbox"] {
 
 .address-suggestion-item {
   padding: 12px 16px;
-  border-bottom: 1px solid #2a2a40;
+  border-bottom: 1px solid #F0F0F0;
   cursor: pointer;
   min-height: 44px;
   display: flex;
@@ -569,18 +665,18 @@ button, a, [role="button"], input[type="checkbox"] {
 }
 
 .address-suggestion-item:active {
-  background: #2a2a50;
+  background: #F5F5F5;
 }
 
 .address-suggestion-name {
   font-weight: 600;
   font-size: 14px;
-  color: #eeeeff;
+  color: #222;
 }
 
 .address-suggestion-address {
   font-size: 12px;
-  color: #7777aa;
+  color: #888;
   margin-top: 2px;
 }
 
@@ -588,7 +684,7 @@ button, a, [role="button"], input[type="checkbox"] {
 .map-wrapper {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 130px); /* below header + tabs */
+  height: calc(100vh - 130px);
 }
 
 .map-filter-bar {
@@ -598,7 +694,7 @@ button, a, [role="button"], input[type="checkbox"] {
   padding: 8px 16px;
   background: #1a1a2e;
   position: relative;
-  z-index: 500; /* above Leaflet tiles */
+  z-index: 500;
   flex-shrink: 0;
 }
 
@@ -639,7 +735,7 @@ button, a, [role="button"], input[type="checkbox"] {
 
 .map-container {
   flex: 1;
-  min-height: 0; /* Required for flex child with Leaflet */
+  min-height: 0;
   width: 100%;
 }
 
@@ -648,31 +744,40 @@ button, a, [role="button"], input[type="checkbox"] {
   padding: 16px;
   max-width: 500px;
   margin: 0 auto;
+  background: #F5F5F5;
+  min-height: 100%;
 }
 
 .budget-card {
-  border: 1px solid #E0E0E0;
-  border-radius: 8px;
+  border: none;
+  border-radius: 12px;
   padding: 16px;
   margin-bottom: 12px;
-  background: #fff;
+  background: #FFFFFF;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .budget-card h3 {
-  margin: 0 0 8px 0;
-  font-size: 1rem;
+  margin: 0 0 12px 0;
+  font-size: 0.85rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .budget-total {
-  font-size: 1.5rem;
-  font-weight: bold;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #222;
 }
 
 .budget-member-row {
   display: flex;
   justify-content: space-between;
-  padding: 6px 0;
+  padding: 10px 0;
   border-bottom: 1px solid #F0F0F0;
+  color: #333;
+  font-size: 0.9rem;
 }
 
 .budget-member-row:last-child {
@@ -680,14 +785,15 @@ button, a, [role="button"], input[type="checkbox"] {
 }
 
 .settle-row {
-  padding: 8px 0;
+  padding: 10px 0;
   font-size: 0.95rem;
+  color: #333;
 }
 
 .budget-empty {
   text-align: center;
   color: #999;
-  padding: 40px 16px;
+  padding: 60px 16px;
 }
 
 /* ---- Activity Cost ---- */
@@ -695,14 +801,6 @@ button, a, [role="button"], input[type="checkbox"] {
   font-size: 0.8rem;
   color: #666;
   margin-top: 2px;
-}
-
-/* ---- Day Tab Cost ---- */
-.day-tab-cost {
-  display: block;
-  font-size: 0.7rem;
-  color: #888;
-  margin-top: 1px;
 }
 
 /* ---- Split Between Chips ---- */
@@ -720,10 +818,13 @@ button, a, [role="button"], input[type="checkbox"] {
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  min-height: 32px;
+  min-height: 36px;
+  min-width: 44px;
   background: #E0E0E0;
   color: #333333;
   transition: background 0.2s ease, color 0.2s ease;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .split-chip.selected {
@@ -731,29 +832,7 @@ button, a, [role="button"], input[type="checkbox"] {
   color: #ffffff;
 }
 
-.split-chip {
-  min-height: 36px;
-  min-width: 44px;
-  -webkit-user-select: none;
-  user-select: none;
-}
-
-/* ---- View Container (tab fade transition) ---- */
-.view-container {
-  animation: viewFade 0.15s ease-in;
-}
-
-@keyframes viewFade {
-  from { opacity: 0.6; }
-  to { opacity: 1; }
-}
-
 /* ---- Active States ---- */
-.day-tab:active {
-  opacity: 0.7;
-  transition: opacity 0.1s;
-}
-
 .activity-card:active {
   transform: scale(0.98);
   transition: transform 0.1s;
@@ -761,4 +840,12 @@ button, a, [role="button"], input[type="checkbox"] {
 
 button:active {
   opacity: 0.7;
+}
+
+/* ---- Desktop: slightly wider cards ---- */
+@media (min-width: 600px) {
+  .app-container {
+    padding: 0 16px;
+    padding-top: env(safe-area-inset-top);
+  }
 }
