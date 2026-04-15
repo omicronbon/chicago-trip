@@ -600,3 +600,29 @@ body {
   min-height: 0; /* Required for flex child with Leaflet */
   width: 100%;
 }
+
+/* ---- Split Between Chips ---- */
+.split-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.split-chip {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 32px;
+  background: #E0E0E0;
+  color: #333333;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.split-chip.selected {
+  background: #4A90D9;
+  color: #ffffff;
+}

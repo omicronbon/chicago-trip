@@ -17,7 +17,7 @@ const CATEGORIES = [
   { value: "free", label: "Free Time / Suggestion" },
 ];
 
-function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime }) {
+function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime, tripMembers = [], currentUserId }) {
   const isEditing = !!activity;
 
   const [title, setTitle] = useState("");
@@ -29,6 +29,9 @@ function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime }) {
   const [durationMinutes, setDurationMinutes] = useState(60);
   const [saving, setSaving] = useState(false);
   const [originalAddress, setOriginalAddress] = useState("");
+  const [cost, setCost] = useState(null);
+  const [paidBy, setPaidBy] = useState(currentUserId || "");
+  const [splitBetween, setSplitBetween] = useState(tripMembers.map((m) => m.uid));
 
   // Autocomplete state
   const [addressSuggestions, setAddressSuggestions] = useState([]);
@@ -49,10 +52,16 @@ function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime }) {
       setAddress(activity.address || "");
       setOriginalAddress(activity.address || "");
       setDurationMinutes(activity.durationMinutes || 60);
-    } else if (prefilledTime) {
-      setTime(prefilledTime);
+      setCost(activity.cost != null ? activity.cost : null);
+      setPaidBy(activity.paidBy || currentUserId || "");
+      setSplitBetween(activity.splitBetween || tripMembers.map((m) => m.uid));
+    } else {
+      if (prefilledTime) setTime(prefilledTime);
+      setCost(null);
+      setPaidBy(currentUserId || "");
+      setSplitBetween(tripMembers.map((m) => m.uid));
     }
-  }, [activity, prefilledTime]);
+  }, [activity, prefilledTime, currentUserId, tripMembers]);
 
   // Close suggestions when clicking outside the address wrapper
   useEffect(() => {
@@ -122,6 +131,7 @@ function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime }) {
       }
     }
 
+    const hasCost = cost != null && cost !== "";
     onSave({
       title: title.trim(),
       emoji: emoji.trim(),
@@ -130,6 +140,9 @@ function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime }) {
       notes: notes.trim(),
       address: trimmedAddress,
       durationMinutes: Number(durationMinutes),
+      cost: hasCost ? Number(cost) : null,
+      paidBy: hasCost ? paidBy : null,
+      splitBetween: hasCost ? splitBetween : null,
       ...coords,
     });
   }
@@ -252,6 +265,62 @@ function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime }) {
             )}
           </div>
         </label>
+
+        <label className="modal-label">
+          Cost ($)
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            placeholder="0.00"
+            value={cost != null ? cost : ""}
+            onChange={(e) => setCost(e.target.value === "" ? null : e.target.value)}
+            className="modal-input modal-input-short"
+          />
+        </label>
+
+        {cost != null && cost !== "" && (
+          <>
+            <label className="modal-label">
+              Paid By
+              <select
+                value={paidBy}
+                onChange={(e) => setPaidBy(e.target.value)}
+                className="modal-input"
+              >
+                {tripMembers.map((m) => (
+                  <option key={m.uid} value={m.uid}>{m.displayName}</option>
+                ))}
+              </select>
+            </label>
+
+            <label className="modal-label">
+              Split Between
+              <div className="split-chips">
+                {tripMembers.map((m) => {
+                  const selected = splitBetween.includes(m.uid);
+                  return (
+                    <button
+                      key={m.uid}
+                      type="button"
+                      className={`split-chip ${selected ? "selected" : ""}`}
+                      onClick={() => {
+                        if (selected && splitBetween.length <= 1) return;
+                        setSplitBetween(
+                          selected
+                            ? splitBetween.filter((uid) => uid !== m.uid)
+                            : [...splitBetween, m.uid]
+                        );
+                      }}
+                    >
+                      {m.displayName}
+                    </button>
+                  );
+                })}
+              </div>
+            </label>
+          </>
+        )}
 
         <div className="modal-buttons">
           <button className="modal-btn modal-btn-save" onClick={handleSubmit} disabled={saving}>

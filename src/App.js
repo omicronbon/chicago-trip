@@ -10,6 +10,7 @@ import {
   updateDoc,
   deleteDoc,
   setDoc,
+  getDoc,
   serverTimestamp,
 } from "firebase/firestore";
 import DayTabs from "./components/DayTabs";
@@ -42,6 +43,7 @@ function App() {
   const [authLoading, setAuthLoading] = useState(true);
   // All activities across all days, keyed by dayId — used for the map view
   const [allActivitiesMap, setAllActivitiesMap] = useState({});
+  const [tripMembers, setTripMembers] = useState([]);
 
   // --- AUTH LISTENER ---
   // Checks if the user is logged in. Runs once on mount.
@@ -59,6 +61,32 @@ function App() {
     });
     return () => unsubscribe();
   }, []);
+
+  // --- FETCH TRIP MEMBERS ---
+  useEffect(() => {
+    if (!user) return;
+
+    const unsubscribe = onSnapshot(doc(db, "trips", TRIP_ID), async (snap) => {
+      const data = snap.data();
+      if (!data) return;
+      const uids = [data.ownerId, ...(data.sharedWith || [])].filter(Boolean);
+      const members = await Promise.all(
+        uids.map(async (uid) => {
+          try {
+            const userSnap = await getDoc(doc(db, "users", uid));
+            if (userSnap.exists()) {
+              const d = userSnap.data();
+              return { uid, displayName: d.displayName || "Unknown", email: d.email || "" };
+            }
+          } catch {}
+          return { uid, displayName: "Unknown", email: "" };
+        })
+      );
+      setTripMembers(members);
+    });
+
+    return () => unsubscribe();
+  }, [user]);
 
   // --- LISTENER 1: Days ---
   useEffect(() => {
@@ -310,6 +338,8 @@ if (!user) {
           onSave={handleSave}
           onDelete={handleDelete}
           onClose={() => { setModalState(null); setPrefilledTime(null); }}
+          tripMembers={tripMembers}
+          currentUserId={user.uid}
         />
       )}
     </div>
