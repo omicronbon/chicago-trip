@@ -21,6 +21,7 @@ export default function TimelineView({
   onToggleComplete,
   onEdit,
   onAddAtTime,
+  tripMembers,
 }) {
   const [now, setNow] = useState(new Date());
   const scrollRef = useRef(null);
@@ -177,6 +178,7 @@ export default function TimelineView({
               }}
               onToggleComplete={() => onToggleComplete(activity.id, activity.completed)}
               onEdit={() => onEdit(activity)}
+              tripMembers={tripMembers}
             />
           </div>
         );

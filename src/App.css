@@ -601,6 +601,21 @@ body {
   width: 100%;
 }
 
+/* ---- Activity Cost ---- */
+.activity-cost {
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 2px;
+}
+
+/* ---- Day Tab Cost ---- */
+.day-tab-cost {
+  display: block;
+  font-size: 0.7rem;
+  color: #888;
+  margin-top: 1px;
+}
+
 /* ---- Split Between Chips ---- */
 .split-chips {
   display: flex;

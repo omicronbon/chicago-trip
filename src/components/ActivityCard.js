@@ -35,7 +35,7 @@ const triggerHaptic = () => {
   }
 };
 
-function ActivityCard({ activity, onToggleComplete, onEdit }) {
+function ActivityCard({ activity, onToggleComplete, onEdit, tripMembers = [] }) {
   const bgColor = CATEGORY_COLORS[activity.category] || "#F9F9F9";
 
   // Calculate height based on hour span
@@ -77,6 +77,11 @@ function ActivityCard({ activity, onToggleComplete, onEdit }) {
             )}
           </div>
 
+          {activity.cost != null && (
+            <p className="activity-cost">
+              ${Number(activity.cost).toFixed(2)} • {tripMembers.find((m) => m.uid === activity.paidBy)?.displayName || "Unknown"}
+            </p>
+          )}
           {activity.notes && (
             <p className="activity-notes">{activity.notes}</p>
           )}

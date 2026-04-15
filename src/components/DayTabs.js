@@ -23,6 +23,7 @@ function DayTabs({
   tripStartDate,
   dayProgress,
   onSelectMap,
+  activitiesMap = {},
 }) {
   const today = getToday();
   const countdown = tripStartDate ? getCountdown(tripStartDate) : null;
@@ -53,6 +54,11 @@ function DayTabs({
           const progress = dayProgress?.[day.id];
           const isSelected = selectedView === "day" && day.id === selectedDayId;
 
+          const dayActivities = activitiesMap[day.id] || [];
+          const dayTotal = dayActivities
+            .filter((a) => a.cost != null)
+            .reduce((sum, a) => sum + a.cost, 0);
+
           return (
             <button
               key={day.id}
@@ -64,6 +70,9 @@ function DayTabs({
               style={{ position: "relative" }}
             >
               <span className="tab-label">{day.label}</span>
+              {dayTotal > 0 && (
+                <span className="day-tab-cost">${Math.round(dayTotal)}</span>
+              )}
               {isToday && (
                 <div style={{
                   width: "6px",

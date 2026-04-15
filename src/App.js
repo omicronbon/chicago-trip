@@ -271,6 +271,7 @@ if (!user) {
         tripStartDate="2026-04-17"
         dayProgress={dayProgress}
         onSelectMap={() => setSelectedView("map")}
+        activitiesMap={allActivitiesMap}
       />
 
 {selectedView === "todo" && <ActionItems userId={user.uid} days={days} />}
@@ -311,6 +312,7 @@ if (!user) {
                 setPrefilledTime(time);
                 setModalState("add");
               }}
+              tripMembers={tripMembers}
             />
           </div>
         </>
