@@ -73,7 +73,7 @@ export default function BudgetView({
   }, [activities, expenses]);
 
   // Calculate per-person stats
-  const { tripTotal, stats, balances } = useMemo(() => {
+  const { tripTotal, balances } = useMemo(() => {
     const s = {};
     for (const m of tripMembers) {
       s[m.uid] = { paid: 0, fairShare: 0 };
