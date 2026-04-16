@@ -70,17 +70,6 @@ function App() {
     }
   }, []);
 
-  // DEBUG: log layout metrics on mount
-  useEffect(() => {
-    const sab = getComputedStyle(document.documentElement).getPropertyValue('--sab').trim();
-    console.log('[DEBUG] window.innerHeight:', window.innerHeight);
-    console.log('[DEBUG] documentElement.clientHeight:', document.documentElement.clientHeight);
-    console.log('[DEBUG] screen.height:', window.screen.height);
-    console.log('[DEBUG] --sab (safe-area-inset-bottom):', sab);
-    console.log('[DEBUG] navigator.standalone:', window.navigator.standalone);
-    console.log('[DEBUG] viewport meta:', document.querySelector('meta[name="viewport"]')?.getAttribute('content'));
-  }, []);
-
   // Listen for service worker updates
   useEffect(() => {
     function onSwUpdate(e) {
@@ -323,10 +312,7 @@ function App() {
 
   return (
     <div className="app-container">
-      {/* DEBUG OVERLAYS — remove before final commit */}
-      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, height: 50, background: "red", zIndex: 9999, pointerEvents: "none" }} />
-      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, height: "env(safe-area-inset-bottom, 0px)", background: "blue", zIndex: 10000, pointerEvents: "none" }} />
-      <div style={{ position: "fixed", bottom: "-34px", left: 0, right: 0, height: 34, background: "green", zIndex: 10001, pointerEvents: "none" }} />
+
 
       <header className="app-header">
         <h1>Chicago 🌆</h1>
