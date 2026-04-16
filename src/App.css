@@ -1,7 +1,7 @@
 /* App.css — Light theme, mobile-first */
 
-@supports (height: 100dvh) {
-  #root { height: 100dvh; }
+@supports (min-height: 100dvh) {
+  #root { min-height: 100dvh; }
 }
 
 /* ---- Reset & Base ---- */
@@ -29,8 +29,8 @@ body {
 }
 
 #root {
-  height: 100%;
-  height: -webkit-fill-available;
+  min-height: 100%;
+  min-height: -webkit-fill-available;
 }
 
 input, select, textarea {
