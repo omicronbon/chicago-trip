@@ -971,8 +971,21 @@ a:focus:not(:focus-visible),
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
   flex-shrink: 0;
   border-left: 3px solid #888;
+  border-top: none;
+  border-right: none;
+  border-bottom: none;
   cursor: pointer;
   transition: box-shadow 0.15s, border-color 0.15s;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.map-card:focus-visible {
+  outline: 2px solid #4A90D9;
+  outline-offset: 2px;
 }
 
 .map-card.selected {
@@ -998,6 +1011,15 @@ a:focus:not(:focus-visible),
   font-size: 10px;
   color: #666;
   margin-top: 1px;
+}
+
+.map-card-strip-empty {
+  padding: 24px 16px;
+  text-align: center;
+  color: #999;
+  font-size: 0.9rem;
+  background: #FFFFFF;
+  border-top: 1px solid #E0E0E0;
 }
 
 /* ---- Budget View ---- */
@@ -1309,6 +1331,10 @@ button:active {
   .fab:hover,
   .budget-fab:hover {
     transform: none;
+  }
+
+  .map-card-strip {
+    scroll-behavior: auto;
   }
 }
 
