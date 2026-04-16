@@ -93,7 +93,7 @@ button, a, [role="button"], input[type="checkbox"] {
   right: 0;
   background: #FFFFFF;
   border-top: 1px solid #E0E0E0;
-  height: calc(56px + env(safe-area-inset-bottom));
+  min-height: 56px;
   padding-bottom: env(safe-area-inset-bottom);
   z-index: 1000;
   display: flex;
