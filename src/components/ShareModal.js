@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Modal from "./Modal";
 import { db } from "../firebase";
 import {
   collection,
@@ -20,11 +21,6 @@ export default function ShareModal({ onClose, currentUserId }) {
   const [status, setStatus] = useState(null);
   const [collaborators, setCollaborators] = useState([]);
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = ''; };
-  }, []);
 
   // Listen to the trip doc to keep sharedWith in sync
   useEffect(() => {
@@ -98,17 +94,22 @@ export default function ShareModal({ onClose, currentUserId }) {
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <h2>Share Trip</h2>
+    <Modal onClose={onClose} labelledBy="share-modal-title">
+      <h2 id="share-modal-title">Share Trip</h2>
 
         <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
           <input
             type="email"
+            inputMode="email"
+            autoComplete="email"
+            autoCapitalize="off"
+            spellCheck={false}
             placeholder="Enter Google email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !loading) handleAdd();
+            }}
             style={{
               flex: 1,
               padding: "10px",
@@ -131,7 +132,7 @@ export default function ShareModal({ onClose, currentUserId }) {
               cursor: "pointer",
             }}
           >
-            {loading ? "..." : "Add"}
+            {loading ? "Adding…" : "Add"}
           </button>
         </div>
 
@@ -201,7 +202,6 @@ export default function ShareModal({ onClose, currentUserId }) {
         >
           Done
         </button>
-      </div>
-    </div>
+    </Modal>
   );
 }

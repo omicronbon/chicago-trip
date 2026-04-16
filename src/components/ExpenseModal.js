@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Modal from "./Modal";
 import { db } from "../firebase";
 import {
   collection,
@@ -27,11 +28,6 @@ export default function ExpenseModal({
   currentUser,
 }) {
   const isEditing = !!expense;
-
-  useEffect(() => {
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = ""; };
-  }, []);
 
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
@@ -93,9 +89,10 @@ export default function ExpenseModal({
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <h2 className="modal-title">{isEditing ? "Edit Expense" : "Add Expense"}</h2>
+    <Modal onClose={onClose} labelledBy="expense-modal-title">
+      <h2 className="modal-title" id="expense-modal-title">
+        {isEditing ? "Edit Expense" : "Add Expense"}
+      </h2>
 
         <label className="modal-label">
           Description
@@ -117,6 +114,7 @@ export default function ExpenseModal({
             }}>$</span>
             <input
               type="number"
+              inputMode="decimal"
               min="0"
               step="0.01"
               value={amount}
@@ -192,7 +190,7 @@ export default function ExpenseModal({
 
         <div className="modal-buttons">
           <button className="modal-btn modal-btn-save" onClick={handleSubmit} disabled={saving}>
-            {saving ? "Saving..." : isEditing ? "Save Changes" : "Add Expense"}
+            {saving ? "Saving…" : isEditing ? "Save Changes" : "Add Expense"}
           </button>
 
           {isEditing && (
@@ -205,7 +203,6 @@ export default function ExpenseModal({
             Cancel
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

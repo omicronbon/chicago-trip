@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Modal from "./Modal";
 import { db } from "../firebase";
 import {
   collection,
@@ -179,6 +180,7 @@ export default function ActionItems({ userId, days }) {
           </span>
           <button
             onClick={() => handleDeleteItem(item.id)}
+            aria-label="Delete task"
             style={{
               background: "none",
               border: "none",
@@ -229,6 +231,7 @@ export default function ActionItems({ userId, days }) {
               </span>
               <button
                 onClick={() => handleDeleteItem(item.id)}
+                aria-label="Delete task"
                 style={{
                   background: "none",
                   border: "none",
@@ -312,6 +315,7 @@ export default function ActionItems({ userId, days }) {
                   e.stopPropagation();
                   handleDeleteOverflow(item.id);
                 }}
+                aria-label="Delete suggestion"
                 style={{
                   background: "none",
                   border: "none",
@@ -333,9 +337,10 @@ export default function ActionItems({ userId, days }) {
       ))}
 
       {scheduleItem && (
-        <div className="modal-overlay" onClick={() => setScheduleItem(null)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h2 className="modal-title">Schedule: {scheduleItem.emoji} {scheduleItem.title}</h2>
+        <Modal onClose={() => setScheduleItem(null)} labelledBy="schedule-modal-title">
+          <h2 className="modal-title" id="schedule-modal-title">
+            Schedule: {scheduleItem.emoji} {scheduleItem.title}
+          </h2>
 
             <label className="modal-label">
               Day
@@ -394,8 +399,7 @@ export default function ActionItems({ userId, days }) {
                 Cancel
               </button>
             </div>
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   );

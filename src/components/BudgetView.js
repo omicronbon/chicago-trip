@@ -33,8 +33,14 @@ const ACTIVITY_CATEGORY_MAP = {
   "Free Time": "Other",
 };
 
+const currencyFormatter = new Intl.NumberFormat(undefined, {
+  style: "currency",
+  currency: "USD",
+});
+
 function fmt(n) {
-  return "$" + Math.abs(n).toFixed(2);
+  // Math.abs preserves the existing behavior; sign is shown separately via "+/-"
+  return currencyFormatter.format(Math.abs(n));
 }
 
 function getName(uid, tripMembers) {
@@ -240,35 +246,58 @@ export default function BudgetView({
           No expenses yet. Tap + to add one.
         </div>
       ) : (
-        allExpenses.map((e) => (
-          <div
-            key={`${e.source}-${e.id}`}
-            className="budget-expense-row"
-            onClick={() => {
-              if (e.source === "expense") setExpenseModal(e);
-            }}
-            style={e.source === "activity" ? { cursor: "default" } : {}}
-          >
-            <div style={{ display: "flex", alignItems: "center", flex: 1, minWidth: 0 }}>
-              <span
-                className="budget-category-dot"
-                style={{ background: CATEGORY_COLORS[e.category] || "#6B7280" }}
-              />
-              <div style={{ minWidth: 0, flex: 1 }}>
-                <div style={{ fontWeight: 600, fontSize: "0.95rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  {e.source === "activity" && <span>📌 </span>}
-                  {e.description}
-                </div>
-                <div style={{ fontSize: "0.8rem", color: "#999", marginTop: 2 }}>
-                  {e.date} &middot; {getName(e.paidBy, tripMembers)} paid
+        allExpenses.map((e) =>
+          e.source === "expense" ? (
+            <button
+              key={`expense-${e.id}`}
+              type="button"
+              className="budget-expense-row budget-expense-row-button"
+              onClick={() => setExpenseModal(e)}
+            >
+              <div style={{ display: "flex", alignItems: "center", flex: 1, minWidth: 0 }}>
+                <span
+                  className="budget-category-dot"
+                  style={{ background: CATEGORY_COLORS[e.category] || "#6B7280" }}
+                />
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div style={{ fontWeight: 600, fontSize: "0.95rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    {e.description}
+                  </div>
+                  <div style={{ fontSize: "0.8rem", color: "#999", marginTop: 2 }}>
+                    {e.date} &middot; {getName(e.paidBy, tripMembers)} paid
+                  </div>
                 </div>
               </div>
+              <div style={{ fontWeight: 700, fontSize: "1rem", marginLeft: 12, flexShrink: 0 }}>
+                {fmt(e.amount)}
+              </div>
+            </button>
+          ) : (
+            <div
+              key={`activity-${e.id}`}
+              className="budget-expense-row"
+            >
+              <div style={{ display: "flex", alignItems: "center", flex: 1, minWidth: 0 }}>
+                <span
+                  className="budget-category-dot"
+                  style={{ background: CATEGORY_COLORS[e.category] || "#6B7280" }}
+                />
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div style={{ fontWeight: 600, fontSize: "0.95rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    <span>📌 </span>
+                    {e.description}
+                  </div>
+                  <div style={{ fontSize: "0.8rem", color: "#999", marginTop: 2 }}>
+                    {e.date} &middot; {getName(e.paidBy, tripMembers)} paid
+                  </div>
+                </div>
+              </div>
+              <div style={{ fontWeight: 700, fontSize: "1rem", marginLeft: 12, flexShrink: 0 }}>
+                {fmt(e.amount)}
+              </div>
             </div>
-            <div style={{ fontWeight: 700, fontSize: "1rem", marginLeft: 12, flexShrink: 0 }}>
-              {fmt(e.amount)}
-            </div>
-          </div>
-        ))
+          )
+        )
       )}
 
       {/* Section E: Settlements Log */}
@@ -279,11 +308,11 @@ export default function BudgetView({
         </div>
       ) : (
         settlements.map((s) => (
-          <div
+          <button
             key={s.id}
-            className="budget-settlement-row"
+            type="button"
+            className="budget-settlement-row budget-settlement-row-button"
             onClick={() => setSettlementModal(s)}
-            style={{ cursor: "pointer" }}
           >
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 600, fontSize: "0.95rem" }}>
@@ -296,13 +325,17 @@ export default function BudgetView({
             <div style={{ fontWeight: 700, fontSize: "1rem", marginLeft: 12, flexShrink: 0 }}>
               {fmt(s.amount)}
             </div>
-          </div>
+          </button>
         ))
       )}
 
       {/* FAB */}
-      <button className="budget-fab" onClick={() => setExpenseModal("add")}>
-        +
+      <button
+        className="budget-fab"
+        onClick={() => setExpenseModal("add")}
+        aria-label="Add expense"
+      >
+        <span aria-hidden="true">+</span>
       </button>
 
       {/* Modals */}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Modal from "./Modal";
 import { db } from "../firebase";
 import {
   collection,
@@ -19,11 +20,6 @@ export default function SettlementModal({
   prefill,
 }) {
   const isEditing = !!settlement;
-
-  useEffect(() => {
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = ""; };
-  }, []);
 
   const [fromUid, setFromUid] = useState("");
   const [toUid, setToUid] = useState("");
@@ -94,9 +90,10 @@ export default function SettlementModal({
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <h2 className="modal-title">{isEditing ? "Edit Payment" : "Record Payment"}</h2>
+    <Modal onClose={onClose} labelledBy="settlement-modal-title">
+      <h2 className="modal-title" id="settlement-modal-title">
+        {isEditing ? "Edit Payment" : "Record Payment"}
+      </h2>
 
         <label className="modal-label">
           Who paid
@@ -139,6 +136,7 @@ export default function SettlementModal({
             }}>$</span>
             <input
               type="number"
+              inputMode="decimal"
               min="0"
               step="0.01"
               value={amount}
@@ -177,7 +175,7 @@ export default function SettlementModal({
             onClick={handleSubmit}
             disabled={saving || !!error}
           >
-            {saving ? "Saving..." : isEditing ? "Save Changes" : "Record Payment"}
+            {saving ? "Saving…" : isEditing ? "Save Changes" : "Record Payment"}
           </button>
 
           {isEditing && (
@@ -190,7 +188,6 @@ export default function SettlementModal({
             Cancel
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

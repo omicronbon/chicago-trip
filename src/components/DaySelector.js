@@ -24,8 +24,11 @@ export default function DaySelector({ days, selectedDayId, onDaySelect }) {
         return (
           <button
             key={day.id}
+            type="button"
             className={`day-pill ${isSelected ? "active" : ""}`}
             onClick={() => onDaySelect(day.id)}
+            aria-current={isToday ? "date" : undefined}
+            aria-pressed={isSelected}
           >
             {formatDayLabel(day.date)}
             {isToday && <div className="day-pill-today-dot" />}
