@@ -87,6 +87,7 @@ function ActivityCard({ activity, onToggleComplete, onEdit, tripMembers = [] }) 
       ref={cardRef}
       className={`activity-card ${activity.completed ? "completed" : ""} density-${density}`}
       style={{ borderLeftColor: bgColor }}
+      onClick={onEdit}
     >
       {activity.confirmed && (
         <span className="activity-badge-confirmed" aria-label="Confirmed">
@@ -98,7 +99,8 @@ function ActivityCard({ activity, onToggleComplete, onEdit, tripMembers = [] }) 
         <button
           type="button"
           className={`check-btn ${activity.completed ? "checked" : ""}`}
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation();
             triggerHaptic();
             onToggleComplete();
           }}
@@ -108,11 +110,10 @@ function ActivityCard({ activity, onToggleComplete, onEdit, tripMembers = [] }) 
           {activity.completed && <span className="checkmark" aria-hidden="true">✓</span>}
         </button>
 
-        {/* Entire content area is a button for "edit activity" */}
+        {/* Content area — keyboard users Tab here and press Enter to edit */}
         <button
           type="button"
           className="activity-content"
-          onClick={onEdit}
           aria-label={`Edit ${activity.title}`}
         >
           <div className="activity-header">

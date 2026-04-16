@@ -25,10 +25,7 @@ export default function Modal({ onClose, labelledBy, children }) {
     document.body.style.overflow = "hidden";
 
     if (contentRef.current) {
-      const focusables = contentRef.current.querySelectorAll(FOCUSABLE);
-      if (focusables.length > 0) {
-        focusables[0].focus();
-      }
+      contentRef.current.focus();
     }
 
     function handleKeyDown(e) {
@@ -72,6 +69,7 @@ export default function Modal({ onClose, labelledBy, children }) {
       <div
         className="modal-content"
         ref={contentRef}
+        tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
