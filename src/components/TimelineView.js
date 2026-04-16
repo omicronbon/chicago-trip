@@ -15,6 +15,57 @@ function formatHour(minutes) {
 
 const HOUR_HEIGHT = 80;
 
+// Assigns each activity a column index so overlapping activities render side-by-side.
+// Returns an array of { activity, start, end, col, totalCols }.
+function layoutActivities(activities) {
+  const items = activities.map((a) => {
+    const duration = a.durationMinutes || (a.hourSpan || 1) * 60;
+    const start = timeToMinutes(a.time);
+    return { activity: a, start, end: start + duration, col: 0, totalCols: 1 };
+  });
+
+  items.sort((a, b) => a.start - b.start || b.end - a.end);
+
+  let i = 0;
+  while (i < items.length) {
+    // Expand cluster to include all activities that overlap with any in the cluster
+    let j = i + 1;
+    let clusterEnd = items[i].end;
+    while (j < items.length && items[j].start < clusterEnd) {
+      clusterEnd = Math.max(clusterEnd, items[j].end);
+      j++;
+    }
+    const cluster = items.slice(i, j);
+
+    // Greedy column assignment: place each activity in the first column it fits
+    const colEnds = [];
+    for (const item of cluster) {
+      let placed = false;
+      for (let c = 0; c < colEnds.length; c++) {
+        if (colEnds[c] <= item.start) {
+          item.col = c;
+          colEnds[c] = item.end;
+          placed = true;
+          break;
+        }
+      }
+      if (!placed) {
+        item.col = colEnds.length;
+        colEnds.push(item.end);
+      }
+    }
+
+    const numCols = colEnds.length;
+    for (const item of cluster) {
+      item.totalCols = numCols;
+    }
+
+    i = j;
+  }
+
+  return items;
+}
+
 export default function TimelineView({
   activities,
   tripDate,
@@ -152,46 +203,32 @@ export default function TimelineView({
         );
       })}
 
-      {Object.entries(
-        activities.reduce((slots, activity) => {
-          const key = activity.time;
-          if (!slots[key]) slots[key] = [];
-          slots[key].push(activity);
-          return slots;
-        }, {})
-      ).map(([time, slotActivities]) => {
-        const actStart = timeToMinutes(time);
-        const top = ((actStart - timelineStart) / 60) * HOUR_HEIGHT;
+      {layoutActivities(activities).map(({ activity, start, end, col, totalCols }) => {
+        const duration = end - start;
+        const top = ((start - timelineStart) / 60) * HOUR_HEIGHT;
+        const height = (duration / 60) * HOUR_HEIGHT;
+        const colWidth = `calc((100% - 8px) / ${totalCols})`;
+        const colLeft = `calc(4px + ${col} * (100% - 8px) / ${totalCols})`;
 
         return (
           <div
-            key={time}
+            key={activity.id}
             style={{
               position: "absolute",
-              left: "4px",
-              right: "4px",
               top: `${top + 1}px`,
-              display: "flex",
-              flexDirection: "column",
-              gap: "12px",
+              height: `${height - 2}px`,
+              left: colLeft,
+              width: colWidth,
               zIndex: 1,
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            {slotActivities.map((activity) => {
-              const duration = activity.durationMinutes || activity.hourSpan * 60 || 60;
-              const height = (duration / 60) * HOUR_HEIGHT;
-              return (
-                <div key={activity.id} style={{ height: `${height - 14}px` }}>
-                  <ActivityCard
-                    activity={{ ...activity, durationMinutes: duration }}
-                    onToggleComplete={() => onToggleComplete(activity.id, activity.completed)}
-                    onEdit={() => onEdit(activity)}
-                    tripMembers={tripMembers}
-                  />
-                </div>
-              );
-            })}
+            <ActivityCard
+              activity={{ ...activity, durationMinutes: duration }}
+              onToggleComplete={() => onToggleComplete(activity.id, activity.completed)}
+              onEdit={() => onEdit(activity)}
+              tripMembers={tripMembers}
+            />
           </div>
         );
       })}

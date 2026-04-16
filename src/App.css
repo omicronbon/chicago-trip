@@ -654,12 +654,6 @@ button, a, [role="button"], input[type="checkbox"] {
   overflow: hidden;
 }
 
-.activity-list {
-  position: relative;
-  padding: 0 8px;
-  padding-bottom: calc(80px + env(safe-area-inset-bottom));
-}
-
 /* ---- Address Autocomplete ---- */
 .address-wrapper {
   position: relative;
