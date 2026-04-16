@@ -45,6 +45,8 @@ function App() {
   const [allActivitiesMap, setAllActivitiesMap] = useState({});
   const [tripMembers, setTripMembers] = useState([]);
   const [hotel, setHotel] = useState(null);
+  const [expenses, setExpenses] = useState([]);
+  const [settlements, setSettlements] = useState([]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -148,6 +150,32 @@ function App() {
     return () => unsubscribes.forEach((fn) => fn());
   }, [user, days]);
 
+  // Expenses listener
+  useEffect(() => {
+    if (!user) return;
+    const q = query(
+      collection(db, "trips", TRIP_ID, "expenses"),
+      orderBy("date", "desc")
+    );
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setExpenses(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })));
+    });
+    return () => unsubscribe();
+  }, [user]);
+
+  // Settlements listener
+  useEffect(() => {
+    if (!user) return;
+    const q = query(
+      collection(db, "trips", TRIP_ID, "settlements"),
+      orderBy("date", "desc")
+    );
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setSettlements(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })));
+    });
+    return () => unsubscribe();
+  }, [user]);
+
   async function handleToggleComplete(activityId, currentStatus) {
     const newStatus = !currentStatus;
     const grouped = groupedActivities.find((a) => a.id === activityId);
@@ -215,6 +243,7 @@ function App() {
       ...act,
       dayId: day.id,
       dayLabel: day.label,
+      dayDate: day.date,
     }))
   );
 
@@ -312,8 +341,11 @@ function App() {
 
         {activeSection === "budget" && (
           <BudgetView
-            activities={Object.values(allActivitiesMap).flat()}
+            activities={allActivities}
             tripMembers={tripMembers}
+            expenses={expenses}
+            settlements={settlements}
+            currentUser={user}
           />
         )}
 
