@@ -7,11 +7,13 @@
   box-sizing: border-box;
 }
 
-:root {
-  --sab: env(safe-area-inset-bottom, 0px);
+html {
+  height: 100%;
+  overscroll-behavior-y: contain;
+  background: #FFFFFF;
 }
 
-html, body, #root {
+body, #root {
   height: 100%;
   overscroll-behavior-y: contain;
   background: #F5F5F5;
@@ -19,7 +21,6 @@ html, body, #root {
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background: #F5F5F5;
   color: #222;
   -webkit-font-smoothing: antialiased;
 }
