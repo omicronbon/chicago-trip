@@ -6,6 +6,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { geocodeAddress } from "../utils/geocode";
 import { searchAddress } from "../utils/addressSearch";
+import Modal from "./Modal";
 
 const CATEGORIES = [
   { value: "Food & Drinks", label: "Food & Drinks" },
@@ -15,65 +16,6 @@ const CATEGORIES = [
 
 function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime, tripMembers = [], currentUserId }) {
   const isEditing = !!activity;
-
-  // Lock body scroll, capture previously focused element, focus title input on mount,
-  // and restore focus to the trigger when modal closes.
-  useEffect(() => {
-    previouslyFocusedRef.current = document.activeElement;
-    document.body.style.overflow = 'hidden';
-
-    // Focus the title input after the modal mounts (small timeout lets the
-    // slide-up animation start first, so the keyboard doesn't jump)
-    const focusTimer = setTimeout(() => {
-      if (titleInputRef.current) titleInputRef.current.focus();
-    }, 50);
-
-    return () => {
-      document.body.style.overflow = '';
-      clearTimeout(focusTimer);
-      // Return focus to whatever opened the modal (e.g., the FAB or an activity card)
-      if (previouslyFocusedRef.current && typeof previouslyFocusedRef.current.focus === 'function') {
-        previouslyFocusedRef.current.focus();
-      }
-    };
-  }, []);
-
-  // Escape closes the modal; Tab is trapped within the modal's focusable elements
-  useEffect(() => {
-    function handleKeyDown(e) {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        handleCloseAttempt();
-        return;
-      }
-
-      if (e.key !== 'Tab') return;
-
-      // Focus trap: find all focusable elements inside the modal and wrap Tab navigation
-      const modal = modalContentRef.current;
-      if (!modal) return;
-
-      const focusable = modal.querySelectorAll(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-      );
-      if (focusable.length === 0) return;
-
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
-    }
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const [title, setTitle] = useState("");
   const [emoji, setEmoji] = useState("");
@@ -103,9 +45,7 @@ function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime, tri
   const debounceRef = useRef(null);
   const addressWrapperRef = useRef(null);
   const suggestionsListRef = useRef(null);
-  const modalContentRef = useRef(null);
   const titleInputRef = useRef(null);
-  const previouslyFocusedRef = useRef(null); // element that had focus before modal opened
 
   useEffect(() => {
     if (activity) {
@@ -298,281 +238,268 @@ function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime, tri
   }
 
   return (
-    <div
-      className="modal-overlay"
-      onClick={handleCloseAttempt}
-      role="presentation"
-    >
-      <div
-        className="modal-content"
-        ref={modalContentRef}
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="activity-modal-title"
-      >
-        <h2 className="modal-title" id="activity-modal-title">
-          {isEditing ? "Edit Activity" : "Add Activity"}
-        </h2>
+    <Modal onClose={handleCloseAttempt} labelledBy="activity-modal-title">
+      <h2 className="modal-title" id="activity-modal-title">
+        {isEditing ? "Edit Activity" : "Add Activity"}
+      </h2>
 
-        {/* Form wrapper enables Enter-to-submit from any text input */}
-        <form onSubmit={handleSubmit} noValidate>
-          <label className="modal-label">
-            Title
+      {/* Form wrapper enables Enter-to-submit from any text input */}
+      <form onSubmit={handleSubmit} noValidate>
+        <label className="modal-label">
+          Title
+          <input
+            ref={titleInputRef}
+            type="text"
+            value={title}
+            onChange={(e) => {
+              setTitle(e.target.value);
+              if (titleError && e.target.value.trim()) setTitleError(false);
+            }}
+            placeholder="e.g. Dinner at Tuk Tuk Thai"
+            className="modal-input"
+            autoComplete="off"
+            aria-invalid={titleError}
+            aria-describedby={titleError ? "title-error" : undefined}
+          />
+          {titleError && (
+            <div
+              id="title-error"
+              role="alert"
+              style={{ color: '#EF4444', fontSize: 12, marginTop: 4 }}
+            >
+              Title is required
+            </div>
+          )}
+        </label>
+
+        <label className="modal-label">
+          Emoji
+          <input
+            type="text"
+            value={emoji}
+            onChange={(e) => setEmoji(e.target.value)}
+            placeholder="e.g. 🍜"
+            className="modal-input modal-input-short"
+            autoComplete="off"
+          />
+        </label>
+
+        <label className="modal-label">
+          Time
+          <input
+            type="time"
+            value={time}
+            onChange={(e) => setTime(e.target.value)}
+            className="modal-input modal-input-short"
+          />
+        </label>
+
+        <label className="modal-label">
+          Category
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="modal-input"
+          >
+            {CATEGORIES.map((cat) => (
+              <option key={cat.value} value={cat.value}>
+                {cat.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <div style={{ marginBottom: 12 }}>
+          <button
+            type="button"
+            onClick={() => setConfirmed((v) => !v)}
+            className={`confirmed-toggle ${confirmed ? "confirmed" : ""}`}
+            aria-pressed={confirmed}
+          >
+            {confirmed ? "✓ Confirmed" : "Mark as confirmed"}
+          </button>
+        </div>
+
+        <label className="modal-label">
+          Notes
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Optional notes"
+            className="modal-input modal-textarea"
+          />
+        </label>
+
+        <label className="modal-label">
+          Duration
+          <select
+            value={durationMinutes}
+            onChange={(e) => setDurationMinutes(Number(e.target.value))}
+            className="modal-input"
+          >
+            <option value={15}>15 min</option>
+            <option value={30}>30 min</option>
+            <option value={45}>45 min</option>
+            <option value={60}>1 hour</option>
+            <option value={90}>1.5 hours</option>
+            <option value={120}>2 hours</option>
+            <option value={150}>2.5 hours</option>
+            <option value={180}>3 hours</option>
+            <option value={240}>4 hours</option>
+          </select>
+        </label>
+
+        <label className="modal-label">
+          Address (for Navigate button)
+          <div className="address-wrapper" ref={addressWrapperRef}>
             <input
-              ref={titleInputRef}
               type="text"
-              value={title}
-              onChange={(e) => {
-                setTitle(e.target.value);
-                if (titleError && e.target.value.trim()) setTitleError(false);
-              }}
-              placeholder="e.g. Dinner at Tuk Tuk Thai"
+              value={address}
+              onChange={(e) => handleAddressChange(e.target.value)}
+              onKeyDown={handleAddressKeyDown}
+              placeholder="e.g. 233 S Wacker Dr, Chicago, IL"
               className="modal-input"
               autoComplete="off"
-              aria-invalid={titleError}
-              aria-describedby={titleError ? "title-error" : undefined}
+              role="combobox"
+              aria-expanded={showSuggestions}
+              aria-controls="address-suggestions-listbox"
+              aria-autocomplete="list"
+              aria-activedescendant={
+                activeSuggestionIndex >= 0
+                  ? `address-suggestion-${activeSuggestionIndex}`
+                  : undefined
+              }
             />
-            {titleError && (
+            {showSuggestions && (
               <div
-                id="title-error"
-                role="alert"
-                style={{ color: '#EF4444', fontSize: 12, marginTop: 4 }}
+                className="address-suggestions"
+                id="address-suggestions-listbox"
+                role="listbox"
+                ref={suggestionsListRef}
               >
-                Title is required
+                {addressSuggestions.map((s, i) => {
+                  const isActive = i === activeSuggestionIndex;
+                  return (
+                    <div
+                      key={i}
+                      id={`address-suggestion-${i}`}
+                      data-suggestion-index={i}
+                      className={`address-suggestion-item ${isActive ? "active" : ""}`}
+                      role="option"
+                      aria-selected={isActive}
+                      onMouseEnter={() => setActiveSuggestionIndex(i)}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        handleSelectSuggestion(s);
+                      }}
+                      onTouchEnd={(e) => {
+                        e.preventDefault();
+                        handleSelectSuggestion(s);
+                      }}
+                    >
+                      <div className="address-suggestion-name">{s.name}</div>
+                      {s.address && (
+                        <div className="address-suggestion-address">{s.address}</div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
-          </label>
+          </div>
+        </label>
 
-          <label className="modal-label">
-            Emoji
-            <input
-              type="text"
-              value={emoji}
-              onChange={(e) => setEmoji(e.target.value)}
-              placeholder="e.g. 🍜"
-              className="modal-input modal-input-short"
-              autoComplete="off"
-            />
-          </label>
+        <label className="modal-label">
+          Cost ($)
+          <input
+            type="number"
+            inputMode="decimal"
+            min="0"
+            step="0.01"
+            placeholder="0.00"
+            value={cost != null ? cost : ""}
+            onChange={(e) => setCost(e.target.value === "" ? null : e.target.value)}
+            className="modal-input modal-input-short"
+          />
+        </label>
 
-          <label className="modal-label">
-            Time
-            <input
-              type="time"
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-              className="modal-input modal-input-short"
-            />
-          </label>
+        {cost != null && cost !== "" && (
+          <>
+            <label className="modal-label">
+              Paid By
+              <select
+                value={paidBy}
+                onChange={(e) => setPaidBy(e.target.value)}
+                className="modal-input"
+              >
+                {tripMembers.map((m) => (
+                  <option key={m.uid} value={m.uid}>{m.displayName}</option>
+                ))}
+              </select>
+            </label>
 
-          <label className="modal-label">
-            Category
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="modal-input"
-            >
-              {CATEGORIES.map((cat) => (
-                <option key={cat.value} value={cat.value}>
-                  {cat.label}
-                </option>
-              ))}
-            </select>
-          </label>
+            <label className="modal-label">
+              Split Between
+              <div className="split-chips">
+                {tripMembers.map((m) => {
+                  const selected = splitBetween.includes(m.uid);
+                  return (
+                    <button
+                      key={m.uid}
+                      type="button"
+                      className={`split-chip ${selected ? "selected" : ""}`}
+                      aria-pressed={selected}
+                      onClick={() => {
+                        if (selected && splitBetween.length <= 1) return;
+                        setSplitBetween(
+                          selected
+                            ? splitBetween.filter((uid) => uid !== m.uid)
+                            : [...splitBetween, m.uid]
+                        );
+                      }}
+                    >
+                      {m.displayName}
+                    </button>
+                  );
+                })}
+              </div>
+            </label>
+          </>
+        )}
 
-          <div style={{ marginBottom: 12 }}>
+        <div className="modal-buttons">
+          <button
+            type="submit"
+            className="modal-btn modal-btn-save"
+            disabled={saving}
+          >
+            {saving ? "Saving…" : isEditing ? "Save Changes" : "Add Activity"}
+          </button>
+
+          {isEditing && (
             <button
               type="button"
-              onClick={() => setConfirmed((v) => !v)}
-              className={`confirmed-toggle ${confirmed ? "confirmed" : ""}`}
-              aria-pressed={confirmed}
-            >
-              {confirmed ? "✓ Confirmed" : "Mark as confirmed"}
-            </button>
-          </div>
-
-          <label className="modal-label">
-            Notes
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Optional notes"
-              className="modal-input modal-textarea"
-            />
-          </label>
-
-          <label className="modal-label">
-            Duration
-            <select
-              value={durationMinutes}
-              onChange={(e) => setDurationMinutes(Number(e.target.value))}
-              className="modal-input"
-            >
-              <option value={15}>15 min</option>
-              <option value={30}>30 min</option>
-              <option value={45}>45 min</option>
-              <option value={60}>1 hour</option>
-              <option value={90}>1.5 hours</option>
-              <option value={120}>2 hours</option>
-              <option value={150}>2.5 hours</option>
-              <option value={180}>3 hours</option>
-              <option value={240}>4 hours</option>
-            </select>
-          </label>
-
-          <label className="modal-label">
-            Address (for Navigate button)
-            <div className="address-wrapper" ref={addressWrapperRef}>
-              <input
-                type="text"
-                value={address}
-                onChange={(e) => handleAddressChange(e.target.value)}
-                onKeyDown={handleAddressKeyDown}
-                placeholder="e.g. 233 S Wacker Dr, Chicago, IL"
-                className="modal-input"
-                autoComplete="off"
-                role="combobox"
-                aria-expanded={showSuggestions}
-                aria-controls="address-suggestions-listbox"
-                aria-autocomplete="list"
-                aria-activedescendant={
-                  activeSuggestionIndex >= 0
-                    ? `address-suggestion-${activeSuggestionIndex}`
-                    : undefined
+              className="modal-btn modal-btn-delete"
+              onClick={() => {
+                if (window.confirm("Delete this activity? This can't be undone.")) {
+                  onDelete(activity.id);
                 }
-              />
-              {showSuggestions && (
-                <div
-                  className="address-suggestions"
-                  id="address-suggestions-listbox"
-                  role="listbox"
-                  ref={suggestionsListRef}
-                >
-                  {addressSuggestions.map((s, i) => {
-                    const isActive = i === activeSuggestionIndex;
-                    return (
-                      <div
-                        key={i}
-                        id={`address-suggestion-${i}`}
-                        data-suggestion-index={i}
-                        className={`address-suggestion-item ${isActive ? "active" : ""}`}
-                        role="option"
-                        aria-selected={isActive}
-                        onMouseEnter={() => setActiveSuggestionIndex(i)}
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          handleSelectSuggestion(s);
-                        }}
-                        onTouchEnd={(e) => {
-                          e.preventDefault();
-                          handleSelectSuggestion(s);
-                        }}
-                      >
-                        <div className="address-suggestion-name">{s.name}</div>
-                        {s.address && (
-                          <div className="address-suggestion-address">{s.address}</div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </label>
-
-          <label className="modal-label">
-            Cost ($)
-            <input
-              type="number"
-              inputMode="decimal"
-              min="0"
-              step="0.01"
-              placeholder="0.00"
-              value={cost != null ? cost : ""}
-              onChange={(e) => setCost(e.target.value === "" ? null : e.target.value)}
-              className="modal-input modal-input-short"
-            />
-          </label>
-
-          {cost != null && cost !== "" && (
-            <>
-              <label className="modal-label">
-                Paid By
-                <select
-                  value={paidBy}
-                  onChange={(e) => setPaidBy(e.target.value)}
-                  className="modal-input"
-                >
-                  {tripMembers.map((m) => (
-                    <option key={m.uid} value={m.uid}>{m.displayName}</option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="modal-label">
-                Split Between
-                <div className="split-chips">
-                  {tripMembers.map((m) => {
-                    const selected = splitBetween.includes(m.uid);
-                    return (
-                      <button
-                        key={m.uid}
-                        type="button"
-                        className={`split-chip ${selected ? "selected" : ""}`}
-                        aria-pressed={selected}
-                        onClick={() => {
-                          if (selected && splitBetween.length <= 1) return;
-                          setSplitBetween(
-                            selected
-                              ? splitBetween.filter((uid) => uid !== m.uid)
-                              : [...splitBetween, m.uid]
-                          );
-                        }}
-                      >
-                        {m.displayName}
-                      </button>
-                    );
-                  })}
-                </div>
-              </label>
-            </>
+              }}
+            >
+              Delete
+            </button>
           )}
 
-          <div className="modal-buttons">
-            <button
-              type="submit"
-              className="modal-btn modal-btn-save"
-              disabled={saving}
-            >
-              {saving ? "Saving…" : isEditing ? "Save Changes" : "Add Activity"}
-            </button>
-
-            {isEditing && (
-              <button
-                type="button"
-                className="modal-btn modal-btn-delete"
-                onClick={() => {
-                  if (window.confirm("Delete this activity? This can't be undone.")) {
-                    onDelete(activity.id);
-                  }
-                }}
-              >
-                Delete
-              </button>
-            )}
-
-            <button
-              type="button"
-              className="modal-btn modal-btn-cancel"
-              onClick={handleCloseAttempt}
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+          <button
+            type="button"
+            className="modal-btn modal-btn-cancel"
+            onClick={handleCloseAttempt}
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </Modal>
   );
 }
 
