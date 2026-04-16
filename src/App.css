@@ -135,6 +135,32 @@ button, a, [role="button"], input[type="checkbox"] {
   margin-top: 2px;
 }
 
+/* ---- Update Banner ---- */
+.update-banner {
+  position: sticky;
+  top: 0;
+  background: #4A90D9;
+  color: #FFFFFF;
+  padding: 8px 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  z-index: 1000;
+  font-size: 0.9rem;
+}
+
+.update-banner button {
+  background: #FFFFFF;
+  color: #4A90D9;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
 /* ---- Day Selector ---- */
 .day-selector {
   position: sticky;

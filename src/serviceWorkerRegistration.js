@@ -5,6 +5,24 @@ export function register() {
       navigator.serviceWorker.register(swUrl).then(
         (registration) => {
           console.log('SW registered:', registration.scope);
+
+          // Check for updates on an interval
+          registration.onupdatefound = () => {
+            const installingWorker = registration.installing;
+            if (!installingWorker) return;
+
+            installingWorker.onstatechange = () => {
+              if (installingWorker.state === 'installed') {
+                if (navigator.serviceWorker.controller) {
+                  // New content available — notify the app
+                  console.log('New SW version available');
+                  window.dispatchEvent(
+                    new CustomEvent('swUpdate', { detail: registration })
+                  );
+                }
+              }
+            };
+          };
         },
         (error) => {
           console.log('SW registration failed:', error);

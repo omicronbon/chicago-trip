@@ -29,6 +29,7 @@ import BudgetView from "./components/BudgetView";
 import { backfillCoordinates } from "./utils/backfillCoordinates";
 
 const TRIP_ID = "chicago-april-2026";
+const APP_VERSION = "2.0.0";
 
 function App() {
   const [days, setDays] = useState([]);
@@ -47,6 +48,36 @@ function App() {
   const [hotel, setHotel] = useState(null);
   const [expenses, setExpenses] = useState([]);
   const [settlements, setSettlements] = useState([]);
+  const [swUpdate, setSwUpdate] = useState(null);
+
+  // One-time cache bust when APP_VERSION changes
+  useEffect(() => {
+    const storedVersion = localStorage.getItem("app_version");
+    if (storedVersion !== APP_VERSION) {
+      localStorage.setItem("app_version", APP_VERSION);
+      if (storedVersion) {
+        // Only nuke caches if upgrading (not first install)
+        Promise.all([
+          navigator.serviceWorker?.getRegistrations().then((regs) =>
+            Promise.all(regs.map((r) => r.unregister()))
+          ),
+          caches.keys().then((keys) =>
+            Promise.all(keys.map((k) => caches.delete(k)))
+          ),
+        ]).then(() => window.location.reload());
+        return;
+      }
+    }
+  }, []);
+
+  // Listen for service worker updates
+  useEffect(() => {
+    function onSwUpdate(e) {
+      setSwUpdate(e.detail);
+    }
+    window.addEventListener("swUpdate", onSwUpdate);
+    return () => window.removeEventListener("swUpdate", onSwUpdate);
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -234,6 +265,14 @@ function App() {
     setModalState(null);
   }
 
+  function handleSwUpdate() {
+    if (!swUpdate?.waiting) return;
+    swUpdate.waiting.postMessage({ type: "SKIP_WAITING" });
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      window.location.reload();
+    });
+  }
+
   const selectedDay = days.find((d) => d.id === selectedDayId);
 
   const groupedActivities = groupActivities(activities);
@@ -285,6 +324,13 @@ function App() {
           </button>
         </div>
       </header>
+
+      {swUpdate && (
+        <div className="update-banner">
+          <span>A new version is available</span>
+          <button onClick={handleSwUpdate}>Update now</button>
+        </div>
+      )}
 
       {activeSection === "itinerary" && (
         <DaySelector
