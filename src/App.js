@@ -327,21 +327,24 @@ function App() {
         </div>
       </header>
 
-      <div key={activeSection} className={`main-content${activeSection === "map" ? " map-active" : ""}`}>
-        {swUpdate && (
-          <div className="update-banner">
-            <span>A new version is available</span>
-            <button onClick={handleSwUpdate}>Update now</button>
-          </div>
-        )}
+      {swUpdate && (
+        <div className="update-banner">
+          <span>A new version is available</span>
+          <button onClick={handleSwUpdate}>Update now</button>
+        </div>
+      )}
 
+      {activeSection === "itinerary" && (
+        <DaySelector
+          days={days}
+          selectedDayId={selectedDayId}
+          onDaySelect={setSelectedDayId}
+        />
+      )}
+
+      <div key={activeSection} className={`main-content${activeSection === "map" ? " map-active" : ""}`}>
         {activeSection === "itinerary" && (
           <>
-            <DaySelector
-              days={days}
-              selectedDayId={selectedDayId}
-              onDaySelect={setSelectedDayId}
-            />
             {selectedDay && (
               <>
                 <h2 className="day-heading">{selectedDay.labelFull || selectedDay.label}</h2>
