@@ -51,14 +51,14 @@ button, a, [role="button"], input[type="checkbox"] {
   min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(70px + env(safe-area-inset-bottom));
   background: #F5F5F5;
   animation: viewFade 0.15s ease-in;
 }
 
 .main-content.map-active {
   overflow: hidden;
-  padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(56px + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
 }
@@ -516,7 +516,7 @@ button, a, [role="button"], input[type="checkbox"] {
 /* ---- Floating Add Button ---- */
 .fab {
   position: fixed;
-  bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(70px + env(safe-area-inset-bottom));
   right: 24px;
   width: 56px;
   height: 56px;
@@ -997,7 +997,7 @@ button, a, [role="button"], input[type="checkbox"] {
 
 .budget-fab {
   position: fixed;
-  bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(70px + env(safe-area-inset-bottom));
   right: 16px;
   width: 56px;
   height: 56px;

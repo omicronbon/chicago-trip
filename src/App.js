@@ -29,7 +29,7 @@ import BudgetView from "./components/BudgetView";
 import { backfillCoordinates } from "./utils/backfillCoordinates";
 
 const TRIP_ID = "chicago-april-2026";
-const APP_VERSION = "2.0.0";
+const APP_VERSION = "2.1.0";
 
 function App() {
   const [days, setDays] = useState([]);
