@@ -152,34 +152,46 @@ export default function TimelineView({
         );
       })}
 
-      {activities.map((activity) => {
-        const actStart = timeToMinutes(activity.time);
-        const duration = activity.durationMinutes || activity.hourSpan * 60 || 60;
+      {Object.entries(
+        activities.reduce((slots, activity) => {
+          const key = activity.time;
+          if (!slots[key]) slots[key] = [];
+          slots[key].push(activity);
+          return slots;
+        }, {})
+      ).map(([time, slotActivities]) => {
+        const actStart = timeToMinutes(time);
         const top = ((actStart - timelineStart) / 60) * HOUR_HEIGHT;
-        const height = (duration / 60) * HOUR_HEIGHT;
 
         return (
           <div
-            key={activity.id}
+            key={time}
             style={{
               position: "absolute",
               left: "4px",
               right: "4px",
               top: `${top + 1}px`,
-              minHeight: `${height - 2}px`,
+              display: "flex",
+              flexDirection: "column",
+              gap: "12px",
               zIndex: 1,
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <ActivityCard
-              activity={{
-                ...activity,
-                durationMinutes: duration,
-              }}
-              onToggleComplete={() => onToggleComplete(activity.id, activity.completed)}
-              onEdit={() => onEdit(activity)}
-              tripMembers={tripMembers}
-            />
+            {slotActivities.map((activity) => {
+              const duration = activity.durationMinutes || activity.hourSpan * 60 || 60;
+              const height = (duration / 60) * HOUR_HEIGHT;
+              return (
+                <div key={activity.id} style={{ height: `${height - 14}px` }}>
+                  <ActivityCard
+                    activity={{ ...activity, durationMinutes: duration }}
+                    onToggleComplete={() => onToggleComplete(activity.id, activity.completed)}
+                    onEdit={() => onEdit(activity)}
+                    tripMembers={tripMembers}
+                  />
+                </div>
+              );
+            })}
           </div>
         );
       })}
