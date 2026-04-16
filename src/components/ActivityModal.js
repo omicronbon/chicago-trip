@@ -67,7 +67,8 @@ function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime, tri
       setPaidBy(currentUserId || "");
       setSplitBetween(tripMembers.map((m) => m.uid));
     }
-  }, [activity, prefilledTime, currentUserId, tripMembers]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activity?.id, prefilledTime, currentUserId]);
 
   // Close suggestions when clicking outside the address wrapper
   useEffect(() => {

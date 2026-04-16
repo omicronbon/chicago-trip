@@ -12,6 +12,11 @@ const FOCUSABLE = [
 export default function Modal({ onClose, labelledBy, children }) {
   const contentRef = useRef(null);
   const previouslyFocused = useRef(null);
+  // Keep a ref so the effect closure always calls the latest onClose without
+  // needing it in the dependency array (which would re-run on every App render
+  // and steal focus back to the first focusable element mid-edit).
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     previouslyFocused.current = document.activeElement;
@@ -29,7 +34,7 @@ export default function Modal({ onClose, labelledBy, children }) {
     function handleKeyDown(e) {
       if (e.key === "Escape") {
         e.stopPropagation();
-        onClose();
+        onCloseRef.current();
         return;
       }
 
@@ -60,7 +65,7 @@ export default function Modal({ onClose, labelledBy, children }) {
         previouslyFocused.current.focus();
       }
     };
-  }, [onClose]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="modal-overlay" onClick={onClose}>
