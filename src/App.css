@@ -46,14 +46,14 @@ button, a, [role="button"], input[type="checkbox"] {
   min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: calc(70px + env(safe-area-inset-bottom));
+  padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px));
   background: #F5F5F5;
   animation: viewFade 0.15s ease-in;
 }
 
 .main-content.map-active {
   overflow: hidden;
-  padding-bottom: calc(56px + env(safe-area-inset-bottom));
+  padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px));
   display: flex;
   flex-direction: column;
 }
@@ -93,12 +93,13 @@ button, a, [role="button"], input[type="checkbox"] {
   right: 0;
   background: #FFFFFF;
   border-top: 1px solid #E0E0E0;
-  min-height: 56px;
-  padding-bottom: env(safe-area-inset-bottom);
+  padding: 0;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   z-index: 1000;
   display: flex;
   justify-content: space-around;
-  align-items: center;
+  align-items: stretch;
+  min-height: calc(56px + env(safe-area-inset-bottom, 0px));
 }
 
 .bottom-nav-item {
@@ -107,7 +108,7 @@ button, a, [role="button"], input[type="checkbox"] {
   align-items: center;
   justify-content: center;
   min-width: 64px;
-  min-height: 44px;
+  height: 56px;
   background: none;
   border: none;
   cursor: pointer;
@@ -481,7 +482,7 @@ button, a, [role="button"], input[type="checkbox"] {
 /* ---- Floating Add Button ---- */
 .fab {
   position: fixed;
-  bottom: calc(70px + env(safe-area-inset-bottom));
+  bottom: calc(64px + env(safe-area-inset-bottom, 0px));
   right: 24px;
   width: 56px;
   height: 56px;
@@ -962,7 +963,7 @@ button, a, [role="button"], input[type="checkbox"] {
 
 .budget-fab {
   position: fixed;
-  bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(64px + env(safe-area-inset-bottom, 0px));
   right: 16px;
   width: 56px;
   height: 56px;
