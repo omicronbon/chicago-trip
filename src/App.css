@@ -26,6 +26,31 @@ input, select, textarea {
 
 button, a, [role="button"], input[type="checkbox"] {
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation; /* eliminates 300ms double-tap-zoom delay on iOS */
+}
+
+/* ---- Focus States (keyboard accessibility) ---- */
+/* Single source of truth for keyboard focus rings. Buttons with custom
+   backgrounds were previously relying on browser defaults that are often
+   invisible. :focus-visible ensures mouse clicks don't trigger the ring,
+   only keyboard navigation does. */
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible,
+.day-pill:focus-visible,
+.map-pill:focus-visible,
+.split-chip:focus-visible,
+.check-btn:focus-visible,
+.bottom-nav-item:focus-visible {
+  outline: 2px solid #4A90D9;
+  outline-offset: 2px;
+}
+
+/* Remove outline when not keyboard-focused (mouse clicks) */
+button:focus:not(:focus-visible),
+a:focus:not(:focus-visible),
+[role="button"]:focus:not(:focus-visible) {
+  outline: none;
 }
 
 /* ---- App Container ---- */
@@ -81,7 +106,7 @@ button, a, [role="button"], input[type="checkbox"] {
 
 .trip-dates {
   font-size: 14px;
-  color: #888;
+  color: #666;
   margin-top: 4px;
 }
 
@@ -327,7 +352,7 @@ button, a, [role="button"], input[type="checkbox"] {
 
 .activity-notes {
   font-size: 12px;
-  color: #888;
+  color: #666;
   margin-top: 3px;
   line-height: 1.4;
 }
@@ -410,6 +435,7 @@ button, a, [role="button"], input[type="checkbox"] {
   max-height: calc(80vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain; /* prevents scrolling page behind modal */
   border-radius: 16px;
   padding: 20px;
   position: relative;
@@ -444,7 +470,7 @@ button, a, [role="button"], input[type="checkbox"] {
   display: block;
   font-size: 12px;
   font-weight: 600;
-  color: #888;
+  color: #595959;
   margin-bottom: 12px;
 }
 
@@ -462,9 +488,10 @@ button, a, [role="button"], input[type="checkbox"] {
   min-height: 44px;
 }
 
-.modal-input:focus {
+.modal-input:focus-visible {
   outline: none;
   border-color: #4A90D9;
+  box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.25); /* visible focus ring for keyboard users */
 }
 
 .modal-input-short {
@@ -630,7 +657,7 @@ button, a, [role="button"], input[type="checkbox"] {
 .empty-state {
   text-align: center;
   padding: 40px 16px;
-  color: #999;
+  color: #666;
   font-size: 15px;
 }
 
@@ -676,6 +703,7 @@ button, a, [role="button"], input[type="checkbox"] {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   max-height: 200px;
   overflow-y: auto;
+  overscroll-behavior: contain; /* prevents scroll chaining into modal body */
   z-index: 200;
   margin-top: 4px;
 }
@@ -706,7 +734,7 @@ button, a, [role="button"], input[type="checkbox"] {
 
 .address-suggestion-address {
   font-size: 12px;
-  color: #888;
+  color: #666;
   margin-top: 2px;
 }
 
@@ -838,7 +866,7 @@ button, a, [role="button"], input[type="checkbox"] {
 
 .map-card-day {
   font-size: 10px;
-  color: #999;
+  color: #666;
   margin-top: 1px;
 }
 
@@ -1019,7 +1047,7 @@ button, a, [role="button"], input[type="checkbox"] {
 
 .budget-empty {
   text-align: center;
-  color: #999;
+  color: #666;
   padding: 60px 16px;
 }
 
@@ -1074,5 +1102,78 @@ button:active {
   .app-container {
     padding: 0 16px;
     padding-top: env(safe-area-inset-top);
+  }
+
+  /* Hover feedback for desktop users (mobile uses :active press states) */
+  .activity-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  }
+
+  .day-pill:hover:not(.active) {
+    background: #F5F5F5;
+  }
+
+  .map-pill:hover:not(.active) {
+    background: #F5F5F5;
+  }
+
+  .bottom-nav-item:hover:not(.active) {
+    color: #666;
+  }
+
+  .modal-btn-save:hover {
+    background: #3A7BC8; /* slightly darker than #4A90D9 */
+  }
+
+  .modal-btn-cancel:hover {
+    background: #E8E8E8;
+  }
+
+  .fab:hover,
+  .budget-fab:hover {
+    transform: scale(1.05);
+    transition: transform 0.15s ease;
+  }
+
+  .nav-btn:hover {
+    opacity: 1;
+  }
+
+  .map-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* ---- Reduced Motion (accessibility) ---- */
+/* Users who have "Reduce Motion" enabled in their OS settings get a
+   stripped-down experience: no slide-ups, no scale effects, no fades.
+   Transitions still technically exist but are effectively instant. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Disable transform-based animations specifically */
+  .modal-content {
+    animation: none;
+  }
+
+  .activity-card.completed {
+    transform: none;
+  }
+
+  .activity-card:active {
+    transform: none;
+  }
+
+  .budget-fab:active,
+  .fab:hover,
+  .budget-fab:hover {
+    transform: none;
   }
 }
