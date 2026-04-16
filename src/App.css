@@ -740,6 +740,20 @@ button, a, [role="button"], input[type="checkbox"] {
   flex-shrink: 0;
 }
 
+.hotel-btn {
+  padding: 5px 10px;
+  border-radius: 16px;
+  border: 1px solid #222;
+  background: #FFFFFF;
+  color: #222;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-height: 32px;
+}
+
 .map-container {
   flex: 1;
   min-height: 0;

@@ -44,6 +44,7 @@ function App() {
   const [authLoading, setAuthLoading] = useState(true);
   const [allActivitiesMap, setAllActivitiesMap] = useState({});
   const [tripMembers, setTripMembers] = useState([]);
+  const [hotel, setHotel] = useState(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -66,6 +67,14 @@ function App() {
     const unsubscribe = onSnapshot(doc(db, "trips", TRIP_ID), async (snap) => {
       const data = snap.data();
       if (!data) return;
+
+      const { hotelName, hotelAddress, hotelLat, hotelLng } = data;
+      if (hotelLat != null && hotelLng != null) {
+        setHotel({ name: hotelName || "", address: hotelAddress || "", lat: hotelLat, lng: hotelLng });
+      } else {
+        setHotel(null);
+      }
+
       const uids = [data.ownerId, ...(data.sharedWith || [])].filter(Boolean);
       const members = await Promise.all(
         uids.map(async (uid) => {
@@ -180,6 +189,15 @@ function App() {
     setPrefilledTime(null);
   }
 
+  async function handleSaveHotel({ name, address, lat, lng }) {
+    await updateDoc(doc(db, "trips", TRIP_ID), {
+      hotelName: name,
+      hotelAddress: address,
+      hotelLat: lat,
+      hotelLng: lng,
+    });
+  }
+
   async function handleDelete(activityId) {
     const activityDoc = doc(
       db, "trips", TRIP_ID, "days", selectedDayId, "activities", activityId
@@ -283,6 +301,8 @@ function App() {
           <MapView
             activities={allActivities}
             days={days}
+            hotel={hotel}
+            onSaveHotel={handleSaveHotel}
             onBackfill={async () => {
               const result = await backfillCoordinates();
               alert(`Done! Geocoded: ${result.geocoded}, Skipped: ${result.skipped}, Failed: ${result.failed}`);
