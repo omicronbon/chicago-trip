@@ -166,7 +166,7 @@ export default function TimelineView({
               left: "4px",
               right: "4px",
               top: `${top + 1}px`,
-              height: `${height - 2}px`,
+              minHeight: `${height - 2}px`,
               zIndex: 1,
             }}
             onClick={(e) => e.stopPropagation()}

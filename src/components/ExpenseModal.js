@@ -12,12 +12,12 @@ import {
 const TRIP_ID = "chicago-april-2026";
 
 const CATEGORIES = [
-  { value: "food", label: "Food" },
-  { value: "transport", label: "Transport" },
-  { value: "lodging", label: "Lodging" },
-  { value: "entertainment", label: "Entertainment" },
-  { value: "shopping", label: "Shopping" },
-  { value: "other", label: "Other" },
+  { value: "Food & Drinks", label: "Food & Drinks" },
+  { value: "Activities", label: "Activities" },
+  { value: "Transport", label: "Transport" },
+  { value: "Lodging", label: "Lodging" },
+  { value: "Shopping", label: "Shopping" },
+  { value: "Other", label: "Other" },
 ];
 
 export default function ExpenseModal({
@@ -37,7 +37,7 @@ export default function ExpenseModal({
   const [amount, setAmount] = useState("");
   const [paidBy, setPaidBy] = useState(currentUser?.uid || "");
   const [splitBetween, setSplitBetween] = useState(tripMembers.map((m) => m.uid));
-  const [category, setCategory] = useState("food");
+  const [category, setCategory] = useState("Food & Drinks");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [saving, setSaving] = useState(false);
 

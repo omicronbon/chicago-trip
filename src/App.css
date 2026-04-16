@@ -7,7 +7,13 @@
   box-sizing: border-box;
 }
 
-html, body, #root {
+html {
+  height: 100%;
+  overscroll-behavior-y: contain;
+  background: #FFFFFF;
+}
+
+body, #root {
   height: 100%;
   overscroll-behavior-y: contain;
   background: #F5F5F5;
@@ -93,22 +99,26 @@ button, a, [role="button"], input[type="checkbox"] {
   right: 0;
   background: #FFFFFF;
   border-top: 1px solid #E0E0E0;
-  padding: 0;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  z-index: 1000;
   display: flex;
   justify-content: space-around;
-  align-items: stretch;
-  min-height: calc(56px + env(safe-area-inset-bottom, 0px));
+  align-items: flex-start;
+  height: calc(56px + env(safe-area-inset-bottom, 0px));
+  padding-top: 6px;
+  padding-bottom: 0;
+  margin: 0;
+  box-sizing: border-box;
+  z-index: 999;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
 .bottom-nav-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   min-width: 64px;
-  height: 56px;
+  height: 44px;
   background: none;
   border: none;
   cursor: pointer;
@@ -117,7 +127,7 @@ button, a, [role="button"], input[type="checkbox"] {
   -webkit-user-select: none;
   user-select: none;
   transition: color 0.15s;
-  padding: 4px 0;
+  padding: 0;
 }
 
 .bottom-nav-item.active {
@@ -239,13 +249,17 @@ button, a, [role="button"], input[type="checkbox"] {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 12px;
-  border-radius: 8px;
+  padding: 12px;
+  border-radius: 12px;
   background: #FFFFFF;
-  border-left: 5px solid #888;
+  border-left: 4px solid #888;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  overflow: visible;
   transition: opacity 0.3s ease, transform 0.3s ease;
   -webkit-user-select: none;
   user-select: none;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .activity-card.completed {
@@ -567,12 +581,12 @@ button, a, [role="button"], input[type="checkbox"] {
 
 /* ---- Duration badge ---- */
 .activity-duration {
-  font-size: 11px;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #4A90D9;
-  background: rgba(74, 144, 217, 0.1);
-  padding: 1px 6px;
-  border-radius: 4px;
+  background: #E8F4FD;
+  padding: 2px 8px;
+  border-radius: 12px;
   margin-left: 4px;
 }
 

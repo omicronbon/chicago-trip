@@ -3,10 +3,17 @@ import { APIProvider, Map, AdvancedMarker, InfoWindow, useMap } from "@vis.gl/re
 import { searchAddress } from "../utils/addressSearch";
 
 const CATEGORY_COLORS = {
-  "Confirmed": "#4CAF50",
-  "Eats": "#FF9800",
+  // Current
+  "Food & Drinks": "#FF9800",
   "Activities": "#4A90D9",
   "Travel/Logistics": "#9E9E9E",
+  // Legacy fallbacks
+  "Eats": "#FF9800",
+  "Confirmed": "#4A90D9",
+  "New Addition": "#4A90D9",
+  "Romantic": "#4A90D9",
+  "User Addition": "#FF9800",
+  "Free Time": "#9E9E9E",
 };
 
 const DAY_FILTERS = [

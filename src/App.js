@@ -343,14 +343,6 @@ function App() {
       <div key={activeSection} className={`main-content${activeSection === "map" ? " map-active" : ""}`}>
         {activeSection === "itinerary" && (
           <>
-            <div className="color-legend">
-              <div className="legend-item"><span className="legend-dot" style={{ background: "#FFD966" }}></span>Confirmed</div>
-              <div className="legend-item"><span className="legend-dot" style={{ background: "#FFEB3B" }}></span>New</div>
-              <div className="legend-item"><span className="legend-dot" style={{ background: "#A8D5A2" }}></span>Travel</div>
-              <div className="legend-item"><span className="legend-dot" style={{ background: "#FF9800" }}></span>Added</div>
-              <div className="legend-item"><span className="legend-dot" style={{ background: "#F9F9F9" }}></span>Free</div>
-            </div>
-
             {selectedDay && (
               <>
                 <h2 className="day-heading">{selectedDay.labelFull || selectedDay.label}</h2>

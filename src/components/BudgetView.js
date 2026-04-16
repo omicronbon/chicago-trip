@@ -3,28 +3,34 @@ import ExpenseModal from "./ExpenseModal";
 import SettlementModal from "./SettlementModal";
 
 const CATEGORY_COLORS = {
-  food: "#FF9800",
-  transport: "#9E9E9E",
-  lodging: "#8B5CF6",
-  entertainment: "#4A90D9",
-  shopping: "#EC4899",
-  other: "#6B7280",
+  "Food & Drinks": "#FF9800",
+  "Activities": "#4A90D9",
+  "Transport": "#9E9E9E",
+  "Lodging": "#8B5CF6",
+  "Shopping": "#EC4899",
+  "Other": "#6B7280",
 };
 
 const CATEGORY_LABELS = {
-  food: "Food",
-  transport: "Transport",
-  lodging: "Lodging",
-  entertainment: "Entertainment",
-  shopping: "Shopping",
-  other: "Other",
+  "Food & Drinks": "Food & Drinks",
+  "Activities": "Activities",
+  "Transport": "Transport",
+  "Lodging": "Lodging",
+  "Shopping": "Shopping",
+  "Other": "Other",
 };
 
 const ACTIVITY_CATEGORY_MAP = {
-  Confirmed: "entertainment",
-  Eats: "food",
-  Activities: "entertainment",
-  "Travel/Logistics": "transport",
+  "Food & Drinks": "Food & Drinks",
+  "Activities": "Activities",
+  "Travel/Logistics": "Transport",
+  // Legacy
+  "Eats": "Food & Drinks",
+  "Confirmed": "Activities",
+  "New Addition": "Activities",
+  "Romantic": "Activities",
+  "User Addition": "Food & Drinks",
+  "Free Time": "Other",
 };
 
 function fmt(n) {

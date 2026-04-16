@@ -6,10 +6,17 @@
 import React from "react";
 
 const CATEGORY_COLORS = {
-  "Confirmed": "#4CAF50",
-  "Eats": "#FF9800",
+  // Current
+  "Food & Drinks": "#FF9800",
   "Activities": "#4A90D9",
   "Travel/Logistics": "#9E9E9E",
+  // Legacy fallbacks
+  "Eats": "#FF9800",
+  "Confirmed": "#4A90D9",
+  "New Addition": "#4A90D9",
+  "Romantic": "#4A90D9",
+  "User Addition": "#FF9800",
+  "Free Time": "#9E9E9E",
 };
 
 function formatTime(time24) {
@@ -46,8 +53,27 @@ function ActivityCard({ activity, onToggleComplete, onEdit, tripMembers = [] }) 
       style={{
         borderLeftColor: bgColor,
         minHeight: cardHeight,
+        position: "relative",
       }}
     >
+      {activity.confirmed && (
+        <span style={{
+          position: "absolute",
+          top: -4,
+          right: -4,
+          width: 20,
+          height: 20,
+          borderRadius: "50%",
+          background: "#4CAF50",
+          color: "#FFFFFF",
+          fontSize: 12,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 2,
+          lineHeight: 1,
+        }}>✓</span>
+      )}
       <div className="activity-main">
         <button
           className={`check-btn ${activity.completed ? "checked" : ""}`}

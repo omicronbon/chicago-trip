@@ -8,8 +8,7 @@ import { geocodeAddress } from "../utils/geocode";
 import { searchAddress } from "../utils/addressSearch";
 
 const CATEGORIES = [
-  { value: "Confirmed", label: "Confirmed" },
-  { value: "Eats", label: "Eats" },
+  { value: "Food & Drinks", label: "Food & Drinks" },
   { value: "Activities", label: "Activities" },
   { value: "Travel/Logistics", label: "Travel / Logistics" },
 ];
@@ -26,6 +25,7 @@ function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime, tri
   const [emoji, setEmoji] = useState("");
   const [time, setTime] = useState("12:00");
   const [category, setCategory] = useState("Activities");
+  const [confirmed, setConfirmed] = useState(false);
   const [notes, setNotes] = useState("");
   const [address, setAddress] = useState("");
   const [durationMinutes, setDurationMinutes] = useState(60);
@@ -50,6 +50,7 @@ function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime, tri
       setEmoji(activity.emoji || "");
       setTime(activity.time || "12:00");
       setCategory(activity.category || "Activities");
+      setConfirmed(activity.confirmed || false);
       setNotes(activity.notes || "");
       setAddress(activity.address || "");
       setOriginalAddress(activity.address || "");
@@ -139,6 +140,7 @@ function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime, tri
       emoji: emoji.trim(),
       time,
       category,
+      confirmed,
       notes: notes.trim(),
       address: trimmedAddress,
       durationMinutes: Number(durationMinutes),
@@ -200,6 +202,29 @@ function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime, tri
             ))}
           </select>
         </label>
+
+        <div style={{ marginBottom: 12 }}>
+          <button
+            type="button"
+            onClick={() => setConfirmed((v) => !v)}
+            style={{
+              padding: "8px 16px",
+              borderRadius: 20,
+              border: "none",
+              background: confirmed ? "#4CAF50" : "#E0E0E0",
+              color: confirmed ? "#FFFFFF" : "#666",
+              fontWeight: 600,
+              fontSize: 14,
+              cursor: "pointer",
+              minHeight: 44,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+            }}
+          >
+            {confirmed ? "✓ Confirmed" : "Confirmed?"}
+          </button>
+        </div>
 
         <label className="modal-label">
           Notes
