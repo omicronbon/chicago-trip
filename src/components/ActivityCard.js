@@ -116,11 +116,12 @@ function ActivityCard({ activity, onToggleComplete, onEdit, tripMembers = [] }) 
           className="activity-content"
           aria-label={`Edit ${activity.title}`}
         >
-          <div className="activity-header">
+          <div className="activity-title">
+            {activity.emoji} {activity.title}
+          </div>
+
+          <div className="activity-meta">
             <span className="activity-time">{formatTime(activity.time)}</span>
-            <span className="activity-title">
-              {activity.emoji} {activity.title}
-            </span>
             {density !== "compact" && (activity.durationMinutes || 60) > 60 && (
               <span className="activity-duration">
                 {activity.durationMinutes >= 60
@@ -130,7 +131,6 @@ function ActivityCard({ activity, onToggleComplete, onEdit, tripMembers = [] }) 
             )}
           </div>
 
-          {/* Cost shown at medium and full density */}
           {density !== "compact" && activity.cost != null && (
             <p className="activity-cost">
               {currencyFormatter.format(Number(activity.cost))}
@@ -138,8 +138,7 @@ function ActivityCard({ activity, onToggleComplete, onEdit, tripMembers = [] }) 
             </p>
           )}
 
-          {/* Notes shown only at full density */}
-          {density === "full" && activity.notes && (
+          {activity.notes && (
             <p className="activity-notes">{activity.notes}</p>
           )}
         </button>
