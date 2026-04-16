@@ -1,12 +1,12 @@
 // ActivityCard.js
 // Renders one activity in the timeline.
-// Height scales with hourSpan (multi-hour activities are taller).
+// Adapts content density to container size: short/narrow cards show only time + title,
+// taller/wider cards progressively reveal cost and notes.
 // Category color shows as a left border.
 
-import React from "react";
+import React, { useRef, useEffect, useState } from "react";
 
 const CATEGORY_COLORS = {
-  // Current
   "Food & Drinks": "#FF9800",
   "Activities": "#4A90D9",
   "Travel/Logistics": "#9E9E9E",
@@ -19,18 +19,30 @@ const CATEGORY_COLORS = {
   "Free Time": "#9E9E9E",
 };
 
+// Intl formatters (locale-aware, cached at module level)
+const timeFormatter = new Intl.DateTimeFormat(undefined, {
+  hour: "numeric",
+  minute: "2-digit",
+});
+const currencyFormatter = new Intl.NumberFormat(undefined, {
+  style: "currency",
+  currency: "USD",
+});
+
 function formatTime(time24) {
   const [hours, minutes] = time24.split(":").map(Number);
-  const period = hours >= 12 ? "PM" : "AM";
-  const hours12 = hours % 12 || 12;
-  return `${hours12}:${minutes.toString().padStart(2, "0")} ${period}`;
+  const d = new Date();
+  d.setHours(hours, minutes, 0, 0);
+  return timeFormatter.format(d);
 }
 
 function handleNavigate(address) {
   const encoded = encodeURIComponent(address);
+  // noopener noreferrer prevents the new tab from accessing window.opener
   window.open(
     `https://www.google.com/maps/dir/?api=1&destination=${encoded}`,
-    "_blank"
+    "_blank",
+    "noopener,noreferrer"
   );
 }
 
@@ -42,57 +54,73 @@ const triggerHaptic = () => {
 
 function ActivityCard({ activity, onToggleComplete, onEdit, tripMembers = [] }) {
   const bgColor = CATEGORY_COLORS[activity.category] || "#E0E0E0";
+  const cardRef = useRef(null);
+  // Track card size to decide what content to show (progressive density)
+  const [density, setDensity] = useState("full"); // "compact" | "medium" | "full"
 
-  // Calculate height based on hour span
-  // Base height is 64px per hour, matching the timeline grid
-  const cardHeight = "100%";
+  useEffect(() => {
+    // Use ResizeObserver to reactively pick a density based on actual card size.
+    // Thresholds:
+    //   compact: height < 50px OR width < 180px — show time + title only
+    //   medium:  height 50–90px                 — add cost
+    //   full:    height > 90px                  — add notes
+    if (!cardRef.current) return;
+    const el = cardRef.current;
+    const observer = new ResizeObserver((entries) => {
+      const { width, height } = entries[0].contentRect;
+      if (height < 50 || width < 180) {
+        setDensity("compact");
+      } else if (height < 90) {
+        setDensity("medium");
+      } else {
+        setDensity("full");
+      }
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const paidByMember = tripMembers.find((m) => m.uid === activity.paidBy);
 
   return (
     <div
-      className={`activity-card ${activity.completed ? "completed" : ""}`}
-      style={{
-        borderLeftColor: bgColor,
-        minHeight: cardHeight,
-        position: "relative",
-      }}
+      ref={cardRef}
+      className={`activity-card ${activity.completed ? "completed" : ""} density-${density}`}
+      style={{ borderLeftColor: bgColor }}
     >
       {activity.confirmed && (
-        <span style={{
-          position: "absolute",
-          top: -4,
-          right: -4,
-          width: 20,
-          height: 20,
-          borderRadius: "50%",
-          background: "#4CAF50",
-          color: "#FFFFFF",
-          fontSize: 12,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          zIndex: 2,
-          lineHeight: 1,
-        }}>✓</span>
+        <span className="activity-badge-confirmed" aria-label="Confirmed">
+          <span aria-hidden="true">✓</span>
+        </span>
       )}
+
       <div className="activity-main">
         <button
+          type="button"
           className={`check-btn ${activity.completed ? "checked" : ""}`}
           onClick={() => {
             triggerHaptic();
             onToggleComplete();
           }}
           aria-label={activity.completed ? "Mark incomplete" : "Mark complete"}
+          aria-pressed={activity.completed}
         >
-          {activity.completed && <span className="checkmark">✓</span>}
+          {activity.completed && <span className="checkmark" aria-hidden="true">✓</span>}
         </button>
 
-        <div className="activity-content" onClick={onEdit} style={{ cursor: "pointer" }}>
+        {/* Entire content area is a button for "edit activity" */}
+        <button
+          type="button"
+          className="activity-content"
+          onClick={onEdit}
+          aria-label={`Edit ${activity.title}`}
+        >
           <div className="activity-header">
             <span className="activity-time">{formatTime(activity.time)}</span>
             <span className="activity-title">
               {activity.emoji} {activity.title}
             </span>
-            {(activity.durationMinutes || 60) > 60 && (
+            {density !== "compact" && (activity.durationMinutes || 60) > 60 && (
               <span className="activity-duration">
                 {activity.durationMinutes >= 60
                   ? `${activity.durationMinutes / 60}h`
@@ -101,33 +129,32 @@ function ActivityCard({ activity, onToggleComplete, onEdit, tripMembers = [] }) 
             )}
           </div>
 
-          {activity.cost != null && (
+          {/* Cost shown at medium and full density */}
+          {density !== "compact" && activity.cost != null && (
             <p className="activity-cost">
-              ${Number(activity.cost).toFixed(2)} • {tripMembers.find((m) => m.uid === activity.paidBy)?.displayName || "Unknown"}
+              {currencyFormatter.format(Number(activity.cost))}
+              {paidByMember && ` • ${paidByMember.displayName}`}
             </p>
           )}
-          {activity.notes && (
+
+          {/* Notes shown only at full density */}
+          {density === "full" && activity.notes && (
             <p className="activity-notes">{activity.notes}</p>
           )}
-          {activity.createdBy && (
-            <span style={{
-              fontSize: "11px",
-              color: "#666",
-              fontStyle: "italic",
-            }}>
-              Added by {activity.createdBy.split("@")[0]}
-            </span>
-          )}
-        </div>
+        </button>
       </div>
 
-      {activity.address && (
+      {activity.address && density !== "compact" && (
         <button
+          type="button"
           className="nav-btn"
-          onClick={() => handleNavigate(activity.address)}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleNavigate(activity.address);
+          }}
           aria-label={`Navigate to ${activity.title}`}
         >
-          <span className="nav-icon">→</span>
+          <span className="nav-icon" aria-hidden="true">→</span>
         </button>
       )}
     </div>

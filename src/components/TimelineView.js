@@ -89,7 +89,14 @@ export default function TimelineView({
 
     const timer = setTimeout(() => {
       if (scrollRef.current) {
-        scrollRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+        // Respect reduced-motion preference
+        const prefersReducedMotion = window.matchMedia(
+          "(prefers-reduced-motion: reduce)"
+        ).matches;
+        scrollRef.current.scrollIntoView({
+          behavior: prefersReducedMotion ? "auto" : "smooth",
+          block: "start",
+        });
         hasScrolled.current = true;
       }
     }, 100);
@@ -213,6 +220,7 @@ export default function TimelineView({
         return (
           <div
             key={activity.id}
+            className="timeline-activity-slot"
             style={{
               position: "absolute",
               top: `${top + 1}px`,
