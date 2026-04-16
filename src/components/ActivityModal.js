@@ -7,14 +7,11 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { geocodeAddress } from "../utils/geocode";
 import { searchAddress } from "../utils/addressSearch";
 
-// Category options matching your color system
 const CATEGORIES = [
-  { value: "confirmed", label: "Confirmed Plan" },
-  { value: "new", label: "New Addition" },
-  { value: "romantic", label: "Romantic" },
-  { value: "travel", label: "Travel / Logistics" },
-  { value: "orange", label: "User Addition" },
-  { value: "free", label: "Free Time / Suggestion" },
+  { value: "Confirmed", label: "Confirmed" },
+  { value: "Eats", label: "Eats" },
+  { value: "Activities", label: "Activities" },
+  { value: "Travel/Logistics", label: "Travel / Logistics" },
 ];
 
 function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime, tripMembers = [], currentUserId }) {
@@ -28,7 +25,7 @@ function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime, tri
   const [title, setTitle] = useState("");
   const [emoji, setEmoji] = useState("");
   const [time, setTime] = useState("12:00");
-  const [category, setCategory] = useState("new");
+  const [category, setCategory] = useState("Activities");
   const [notes, setNotes] = useState("");
   const [address, setAddress] = useState("");
   const [durationMinutes, setDurationMinutes] = useState(60);
@@ -52,7 +49,7 @@ function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime, tri
       setTitle(activity.title || "");
       setEmoji(activity.emoji || "");
       setTime(activity.time || "12:00");
-      setCategory(activity.category || "new");
+      setCategory(activity.category || "Activities");
       setNotes(activity.notes || "");
       setAddress(activity.address || "");
       setOriginalAddress(activity.address || "");

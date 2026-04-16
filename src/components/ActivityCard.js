@@ -6,12 +6,10 @@
 import React from "react";
 
 const CATEGORY_COLORS = {
-  confirmed: "#FFD966",
-  new: "#FFEB3B",
-  romantic: "#FFEB3B",
-  travel: "#A8D5A2",
-  orange: "#FF9800",
-  free: "#F9F9F9",
+  "Confirmed": "#4CAF50",
+  "Eats": "#FF9800",
+  "Activities": "#4A90D9",
+  "Travel/Logistics": "#9E9E9E",
 };
 
 function formatTime(time24) {
@@ -36,7 +34,7 @@ const triggerHaptic = () => {
 };
 
 function ActivityCard({ activity, onToggleComplete, onEdit, tripMembers = [] }) {
-  const bgColor = CATEGORY_COLORS[activity.category] || "#F9F9F9";
+  const bgColor = CATEGORY_COLORS[activity.category] || "#E0E0E0";
 
   // Calculate height based on hour span
   // Base height is 64px per hour, matching the timeline grid

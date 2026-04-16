@@ -2,12 +2,10 @@ import React, { useState, useMemo, useRef, useEffect, useCallback } from "react"
 import { APIProvider, Map, AdvancedMarker, InfoWindow, useMap } from "@vis.gl/react-google-maps";
 
 const CATEGORY_COLORS = {
-  confirmed: "#FFD966",
-  new: "#FFEB3B",
-  romantic: "#FFEB3B",
-  travel: "#A8D5A2",
-  orange: "#FF9800",
-  free: "#F9F9F9",
+  "Confirmed": "#4CAF50",
+  "Eats": "#FF9800",
+  "Activities": "#4A90D9",
+  "Travel/Logistics": "#9E9E9E",
 };
 
 const DAY_FILTERS = [
@@ -119,7 +117,7 @@ function MapView({ activities, days, onBackfill }) {
             <MapPanner selectedActivity={selectedActivity} />
 
             {filteredActivities.map((activity) => {
-              const color = CATEGORY_COLORS[activity.category] || "#888";
+              const color = CATEGORY_COLORS[activity.category] || "#E0E0E0";
               const isSelected = activity.id === selectedId;
               return (
                 <AdvancedMarker
@@ -190,7 +188,7 @@ function MapView({ activities, days, onBackfill }) {
       {filteredActivities.length > 0 && (
         <div className="map-card-strip" ref={cardStripRef}>
           {filteredActivities.map((activity) => {
-            const color = CATEGORY_COLORS[activity.category] || "#888";
+            const color = CATEGORY_COLORS[activity.category] || "#E0E0E0";
             const isSelected = activity.id === selectedId;
             return (
               <div
