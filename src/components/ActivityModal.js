@@ -95,9 +95,14 @@ function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime, tri
   const [showSuggestions, setShowSuggestions] = useState(false);
   // If user picks a suggestion, store coords so we skip Nominatim on save
   const [selectedCoords, setSelectedCoords] = useState(null);
+  // -1 means no suggestion is keyboard-focused. 0+ is the index of the active one.
+  // We don't reuse showSuggestions because the visual highlight should only appear
+  // after the user arrows down, not when the list first opens.
+  const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
 
   const debounceRef = useRef(null);
   const addressWrapperRef = useRef(null);
+  const suggestionsListRef = useRef(null);
   const modalContentRef = useRef(null);
   const titleInputRef = useRef(null);
   const previouslyFocusedRef = useRef(null); // element that had focus before modal opened
@@ -138,6 +143,17 @@ function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime, tri
       document.removeEventListener("touchstart", handleClickOutside);
     };
   }, []);
+
+  // When the user arrows through suggestions, keep the active one visible
+  useEffect(() => {
+    if (activeSuggestionIndex < 0 || !suggestionsListRef.current) return;
+    const activeElement = suggestionsListRef.current.querySelector(
+      `[data-suggestion-index="${activeSuggestionIndex}"]`
+    );
+    if (activeElement) {
+      activeElement.scrollIntoView({ block: "nearest" });
+    }
+  }, [activeSuggestionIndex]);
 
   // Track whether the form has unsaved edits. Used to warn before closing
   // when the user clicks the overlay or hits Escape.
@@ -185,6 +201,7 @@ function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime, tri
     if (value.trim().length < 3) {
       setAddressSuggestions([]);
       setShowSuggestions(false);
+      setActiveSuggestionIndex(-1);
       return;
     }
 
@@ -192,6 +209,7 @@ function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime, tri
       const results = await searchAddress(value);
       setAddressSuggestions(results);
       setShowSuggestions(results.length > 0);
+      setActiveSuggestionIndex(-1); // new search results, nothing highlighted yet
     }, 300);
   }, []);
 
@@ -201,11 +219,34 @@ function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime, tri
     setSelectedCoords({ lat: suggestion.lat, lng: suggestion.lng });
     setAddressSuggestions([]);
     setShowSuggestions(false);
+    setActiveSuggestionIndex(-1);
   }
 
   function handleAddressKeyDown(e) {
-    if (e.key === "Escape") {
+    if (!showSuggestions || addressSuggestions.length === 0) {
+      if (e.key === "Escape") setShowSuggestions(false);
+      return;
+    }
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActiveSuggestionIndex((prev) =>
+        prev >= addressSuggestions.length - 1 ? 0 : prev + 1
+      );
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveSuggestionIndex((prev) =>
+        prev <= 0 ? addressSuggestions.length - 1 : prev - 1
+      );
+    } else if (e.key === "Enter") {
+      if (activeSuggestionIndex >= 0 && activeSuggestionIndex < addressSuggestions.length) {
+        e.preventDefault();
+        handleSelectSuggestion(addressSuggestions[activeSuggestionIndex]);
+      }
+    } else if (e.key === "Escape") {
+      e.preventDefault();
       setShowSuggestions(false);
+      setActiveSuggestionIndex(-1);
     }
   }
 
@@ -391,28 +432,50 @@ function ActivityModal({ activity, onSave, onDelete, onClose, prefilledTime, tri
                 placeholder="e.g. 233 S Wacker Dr, Chicago, IL"
                 className="modal-input"
                 autoComplete="off"
+                role="combobox"
+                aria-expanded={showSuggestions}
+                aria-controls="address-suggestions-listbox"
+                aria-autocomplete="list"
+                aria-activedescendant={
+                  activeSuggestionIndex >= 0
+                    ? `address-suggestion-${activeSuggestionIndex}`
+                    : undefined
+                }
               />
               {showSuggestions && (
-                <div className="address-suggestions">
-                  {addressSuggestions.map((s, i) => (
-                    <div
-                      key={i}
-                      className="address-suggestion-item"
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        handleSelectSuggestion(s);
-                      }}
-                      onTouchEnd={(e) => {
-                        e.preventDefault();
-                        handleSelectSuggestion(s);
-                      }}
-                    >
-                      <div className="address-suggestion-name">{s.name}</div>
-                      {s.address && (
-                        <div className="address-suggestion-address">{s.address}</div>
-                      )}
-                    </div>
-                  ))}
+                <div
+                  className="address-suggestions"
+                  id="address-suggestions-listbox"
+                  role="listbox"
+                  ref={suggestionsListRef}
+                >
+                  {addressSuggestions.map((s, i) => {
+                    const isActive = i === activeSuggestionIndex;
+                    return (
+                      <div
+                        key={i}
+                        id={`address-suggestion-${i}`}
+                        data-suggestion-index={i}
+                        className={`address-suggestion-item ${isActive ? "active" : ""}`}
+                        role="option"
+                        aria-selected={isActive}
+                        onMouseEnter={() => setActiveSuggestionIndex(i)}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          handleSelectSuggestion(s);
+                        }}
+                        onTouchEnd={(e) => {
+                          e.preventDefault();
+                          handleSelectSuggestion(s);
+                        }}
+                      >
+                        <div className="address-suggestion-name">{s.name}</div>
+                        {s.address && (
+                          <div className="address-suggestion-address">{s.address}</div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>

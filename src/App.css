@@ -748,6 +748,12 @@ a:focus:not(:focus-visible),
   background: #F5F5F5;
 }
 
+/* Highlighted via keyboard (ArrowDown/Up) or mouse hover.
+   Visually distinct from :active (press) so keyboard users see where they are. */
+.address-suggestion-item.active {
+  background: #E8F4FD;
+}
+
 .address-suggestion-name {
   font-weight: 600;
   font-size: 14px;
