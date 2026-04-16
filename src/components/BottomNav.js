@@ -9,17 +9,25 @@ const NAV_ITEMS = [
 
 export default function BottomNav({ activeSection, onSectionChange }) {
   return (
-    <nav className="bottom-nav">
-      {NAV_ITEMS.map((item) => (
-        <button
-          key={item.key}
-          className={`bottom-nav-item ${activeSection === item.key ? "active" : ""}`}
-          onClick={() => onSectionChange(item.key)}
-        >
-          <span className="bottom-nav-emoji">{item.emoji}</span>
-          <span className="bottom-nav-label">{item.label}</span>
-        </button>
-      ))}
+    <nav className="bottom-nav" aria-label="Primary">
+      {NAV_ITEMS.map((item) => {
+        const isActive = activeSection === item.key;
+        return (
+          <button
+            key={item.key}
+            type="button"
+            className={`bottom-nav-item ${isActive ? "active" : ""}`}
+            onClick={() => onSectionChange(item.key)}
+            aria-current={isActive ? "page" : undefined}
+          >
+            {/* aria-hidden: emoji is decorative, label conveys meaning */}
+            <span className="bottom-nav-emoji" aria-hidden="true">
+              {item.emoji}
+            </span>
+            <span className="bottom-nav-label">{item.label}</span>
+          </button>
+        );
+      })}
     </nav>
   );
 }
