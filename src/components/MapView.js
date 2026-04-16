@@ -57,7 +57,13 @@ function MapPanner({ selectedActivity }) {
 }
 
 function MapView({ activities, days, hotel, onSaveHotel, onBackfill }) {
-  const [activeFilter, setActiveFilter] = useState("all");
+  const [activeFilter, setActiveFilter] = useState(() => {
+    const today = new Date();
+    const todayInt = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+    if (todayInt < 20260417) return "fri";
+    if (todayInt > 20260420) return "all";
+    return { 17: "fri", 18: "sat", 19: "sun", 20: "mon" }[today.getDate()] || "all";
+  });
   const [selectedId, setSelectedId] = useState(null);
   const [hotelInfoOpen, setHotelInfoOpen] = useState(false);
   const cardStripRef = useRef(null);
