@@ -1,4 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="96" fill="#4A90D9"/>
-  <text x="256" y="340" text-anchor="middle" font-size="280" fill="white">✈</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <g fill="none" stroke="#4A90D9" stroke-width="3" stroke-linecap="round">
+    <circle cx="32" cy="32" r="24"/>
+    <line x1="8" y1="32" x2="56" y2="32"/>
+    <ellipse cx="32" cy="32" rx="10" ry="24"/>
+    <path d="M 32 8 Q 14 32 32 56"/>
+    <path d="M 32 8 Q 50 32 32 56"/>
+  </g>
 </svg>

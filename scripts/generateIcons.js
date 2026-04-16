@@ -14,6 +14,11 @@ async function generate() {
     .png()
     .toFile(path.join(__dirname, '..', 'public', 'icon-512.png'));
 
+  await sharp(svgPath)
+    .resize(32, 32)
+    .png()
+    .toFile(path.join(__dirname, '..', 'public', 'favicon.ico'));
+
   console.log('Icons generated.');
 }
 
