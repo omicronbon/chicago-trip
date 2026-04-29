@@ -4,6 +4,7 @@ import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import LoginScreen from './LoginScreen';
+import NewTripModal from './NewTripModal';
 
 export default function TripList() {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ export default function TripList() {
   const [authLoading, setAuthLoading] = useState(true);
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showNewTrip, setShowNewTrip] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
@@ -82,7 +84,10 @@ export default function TripList() {
     <div className="app-container">
       <header className="app-header">
         <h1>Your trips</h1>
-        <div style={{ position: "absolute", top: "16px", right: "16px" }}>
+        <div style={{ position: "absolute", top: "16px", right: "16px", display: "flex", gap: "8px", alignItems: "center" }}>
+          <button className="signout-btn" onClick={() => setShowNewTrip(true)}>
+            + New trip
+          </button>
           <button className="signout-btn" onClick={() => signOut(auth)}>
             Sign out
           </button>
@@ -91,7 +96,7 @@ export default function TripList() {
 
       <div style={{ padding: "0 16px", marginTop: "16px" }}>
         {trips.length === 0 ? (
-          <div className="empty-state">No trips yet. (Trip creation coming soon.)</div>
+          <div className="empty-state">No trips yet. Click + New trip to get started.</div>
         ) : (
           trips.map((trip) => (
             <div
@@ -114,6 +119,10 @@ export default function TripList() {
           ))
         )}
       </div>
+
+      {showNewTrip && user && (
+        <NewTripModal user={user} onClose={() => setShowNewTrip(false)} />
+      )}
     </div>
   );
 }
