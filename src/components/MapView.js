@@ -57,7 +57,7 @@ function MapPanner({ selectedActivity }) {
   return null;
 }
 
-function MapView({ activities, days, hotel, onSaveHotel, onBackfill }) {
+function MapView({ activities, days, hotel, onSaveHotel }) {
   const [activeFilter, setActiveFilter] = useState(() => {
     const today = new Date();
     const todayInt = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();

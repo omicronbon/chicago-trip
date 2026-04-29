@@ -26,7 +26,6 @@ import ActionItems from "./components/ActionItems";
 import TimelineView from "./components/TimelineView";
 import MapView from "./components/MapView";
 import BudgetView from "./components/BudgetView";
-import { backfillCoordinates } from "./utils/backfillCoordinates";
 
 const TRIP_ID = "chicago-april-2026";
 const APP_VERSION = "2.1.0";
@@ -344,7 +343,9 @@ function App() {
       <div key={activeSection} className={`main-content${activeSection === "map" ? " map-active" : ""}`}>
         {activeSection === "itinerary" && (
           <>
-            {selectedDay && (
+            {days.length === 0 ? (
+              <div className="empty-state">No days yet for this trip.</div>
+            ) : selectedDay && (
               <>
                 <h2 className="day-heading">{selectedDay.labelFull || selectedDay.label}</h2>
                 <div className="activity-list">
@@ -371,10 +372,6 @@ function App() {
             days={days}
             hotel={hotel}
             onSaveHotel={handleSaveHotel}
-            onBackfill={async () => {
-              const result = await backfillCoordinates();
-              alert(`Done! Geocoded: ${result.geocoded}, Skipped: ${result.skipped}, Failed: ${result.failed}`);
-            }}
           />
         )}
 
