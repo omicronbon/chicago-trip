@@ -1,0 +1,53 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function getTripData(tripId) {
+      return get(/databases/$(database)/documents/trips/$(tripId)).data;
+    }
+    function isTripOwner(tripId) {
+      return isSignedIn() &&
+        getTripData(tripId).ownerId == request.auth.uid;
+    }
+    function isCollaborator(tripId) {
+      return isSignedIn() && (
+        getTripData(tripId).ownerId == request.auth.uid ||
+        request.auth.uid in getTripData(tripId).sharedWith
+      );
+    }
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && request.auth.uid == userId;
+    }
+    match /trips/{tripId} {
+      allow read: if isSignedIn() && (
+        resource.data.ownerId == request.auth.uid ||
+        request.auth.uid in resource.data.sharedWith
+      );
+      allow create: if isSignedIn() &&
+        request.resource.data.ownerId == request.auth.uid;
+      allow update: if isCollaborator(tripId);
+      allow delete: if isTripOwner(tripId);
+      match /days/{dayId} {
+        allow read, write: if isCollaborator(tripId);
+        match /activities/{activityId} {
+          allow read, write: if isCollaborator(tripId);
+        }
+      }
+      match /actionItems/{itemId} {
+        allow read, write: if isCollaborator(tripId);
+      }
+      match /overflow/{itemId} {
+        allow read, write: if isCollaborator(tripId);
+      }
+      match /expenses/{expenseId} {
+        allow read, write: if isCollaborator(tripId);
+      }
+      match /settlements/{settlementId} {
+        allow read, write: if isCollaborator(tripId);
+      }
+    }
+  }
+}
