@@ -31,36 +31,46 @@ export default function TripList() {
     if (!user) return;
 
     const tripsRef = collection(db, 'trips');
-    const merged = new Map();
+    let ownedDocs = new Map();
+    let sharedDocs = new Map();
     let ownedReady = false;
     let sharedReady = false;
 
-    function applySnapshot(docs) {
-      docs.forEach((d) => {
-        const data = d.data();
-        merged.set(d.id, {
-          id: d.id,
-          name: data.name || '',
-          destination: data.destination || '',
-          startDate: data.startDate || '',
-          endDate: data.endDate || '',
-          ownerId: data.ownerId || '',
-        });
-      });
-      if (ownedReady && sharedReady) {
-        setTrips(Array.from(merged.values()));
-        setLoading(false);
-      }
+    function tripFromDoc(d) {
+      const data = d.data();
+      return {
+        id: d.id,
+        name: data.name || '',
+        destination: data.destination || '',
+        startDate: data.startDate || '',
+        endDate: data.endDate || '',
+        ownerId: data.ownerId || '',
+      };
+    }
+
+    function emit() {
+      if (!ownedReady || !sharedReady) return;
+      const merged = new Map([...ownedDocs, ...sharedDocs]);
+      setTrips(Array.from(merged.values()));
+      setLoading(false);
     }
 
     const ownedUnsub = onSnapshot(
       query(tripsRef, where('ownerId', '==', user.uid)),
-      (snap) => { ownedReady = true; applySnapshot(snap.docs); }
+      (snap) => {
+        ownedDocs = new Map(snap.docs.map((d) => [d.id, tripFromDoc(d)]));
+        ownedReady = true;
+        emit();
+      }
     );
 
     const sharedUnsub = onSnapshot(
       query(tripsRef, where('sharedWith', 'array-contains', user.uid)),
-      (snap) => { sharedReady = true; applySnapshot(snap.docs); }
+      (snap) => {
+        sharedDocs = new Map(snap.docs.map((d) => [d.id, tripFromDoc(d)]));
+        sharedReady = true;
+        emit();
+      }
     );
 
     return () => { ownedUnsub(); sharedUnsub(); };
