@@ -44,7 +44,7 @@ export default function ShareModal({ onClose, currentUserId }) {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [tripId]);
 
   async function handleAdd() {
     const trimmed = email.trim().toLowerCase();

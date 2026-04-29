@@ -34,7 +34,7 @@ export default function ActionItems({ userId, days }) {
       setItems(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })));
     });
     return () => unsubscribe();
-  }, []);
+  }, [tripId]);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(
@@ -44,7 +44,7 @@ export default function ActionItems({ userId, days }) {
       }
     );
     return () => unsubscribe();
-  }, []);
+  }, [tripId]);
 
   async function handleAdd() {
     const trimmed = newTitle.trim();

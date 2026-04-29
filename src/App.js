@@ -132,7 +132,7 @@ function App() {
     });
 
     return () => unsubscribe();
-  }, [user]);
+  }, [user, tripId]);
 
   useEffect(() => {
     if (!user) return;
@@ -153,7 +153,7 @@ function App() {
     });
 
     return () => unsubscribe();
-  }, [user]);
+  }, [user, tripId]);
 
   useEffect(() => {
     if (!user || !selectedDayId) return;
@@ -169,7 +169,7 @@ function App() {
     });
 
     return () => unsubscribe();
-  }, [user, selectedDayId]);
+  }, [user, selectedDayId, tripId]);
 
   useEffect(() => {
     if (!user || days.length === 0) return;
@@ -186,7 +186,7 @@ function App() {
     });
 
     return () => unsubscribes.forEach((fn) => fn());
-  }, [user, days]);
+  }, [user, days, tripId]);
 
   // Expenses listener
   useEffect(() => {
@@ -199,7 +199,7 @@ function App() {
       setExpenses(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })));
     });
     return () => unsubscribe();
-  }, [user]);
+  }, [user, tripId]);
 
   // Settlements listener
   useEffect(() => {
@@ -212,7 +212,7 @@ function App() {
       setSettlements(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })));
     });
     return () => unsubscribe();
-  }, [user]);
+  }, [user, tripId]);
 
   async function handleToggleComplete(activityId, currentStatus) {
     const newStatus = !currentStatus;
