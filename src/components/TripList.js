@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { auth, db } from '../firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import LoginScreen from './LoginScreen';
 import NewTripModal from './NewTripModal';
+import RenameTripModal from './RenameTripModal';
+import { deleteTripWithCascade } from '../utils/deleteTrip';
 
 export default function TripList() {
   const navigate = useNavigate();
@@ -13,6 +15,9 @@ export default function TripList() {
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showNewTrip, setShowNewTrip] = useState(false);
+  const [openMenuId, setOpenMenuId] = useState(null);
+  const [renameTrip, setRenameTrip] = useState(null);
+  const menuRef = useRef(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
@@ -39,6 +44,7 @@ export default function TripList() {
           destination: data.destination || '',
           startDate: data.startDate || '',
           endDate: data.endDate || '',
+          ownerId: data.ownerId || '',
         });
       });
       if (ownedReady && sharedReady) {
@@ -59,6 +65,31 @@ export default function TripList() {
 
     return () => { ownedUnsub(); sharedUnsub(); };
   }, [user]);
+
+  useEffect(() => {
+    if (!openMenuId) return;
+    function handleClickOutside(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setOpenMenuId(null);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [openMenuId]);
+
+  async function handleDelete(trip) {
+    if (!window.confirm(`Delete "${trip.name}" and all its data? This cannot be undone.`)) return;
+    try {
+      await deleteTripWithCascade(trip.id);
+    } catch (err) {
+      alert(`Delete failed: ${err.message}`);
+    }
+    setOpenMenuId(null);
+  }
 
   if (authLoading) {
     return (
@@ -103,6 +134,7 @@ export default function TripList() {
               key={trip.id}
               onClick={() => navigate(`/trips/${trip.id}`)}
               style={{
+                position: "relative",
                 background: "#FFFFFF",
                 borderRadius: "12px",
                 padding: "16px",
@@ -110,11 +142,100 @@ export default function TripList() {
                 cursor: "pointer",
               }}
             >
-              <h3 style={{ margin: "0 0 4px", fontSize: "18px" }}>{trip.name}</h3>
+              <h3 style={{ margin: "0 0 4px", fontSize: "18px", paddingRight: "36px" }}>{trip.name}</h3>
               <p style={{ margin: "0 0 2px", color: "#888", fontSize: "14px" }}>{trip.destination}</p>
               <p style={{ margin: 0, color: "#888", fontSize: "13px" }}>
                 {trip.startDate} – {trip.endDate}
               </p>
+
+              {/* Kebab button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  setOpenMenuId(openMenuId === trip.id ? null : trip.id);
+                }}
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  right: 0,
+                  width: "44px",
+                  height: "44px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: "none",
+                  border: "none",
+                  color: "#888",
+                  fontSize: "20px",
+                  cursor: "pointer",
+                  borderRadius: "0 12px 0 0",
+                }}
+                aria-label="Trip options"
+              >
+                ⋮
+              </button>
+
+              {/* Popover menu */}
+              {openMenuId === trip.id && (
+                <div
+                  ref={menuRef}
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    position: "absolute",
+                    top: "44px",
+                    right: "8px",
+                    background: "#FFFFFF",
+                    borderRadius: "10px",
+                    boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
+                    zIndex: 100,
+                    minWidth: "140px",
+                    overflow: "hidden",
+                  }}
+                >
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setRenameTrip(trip);
+                      setOpenMenuId(null);
+                    }}
+                    style={{
+                      display: "block",
+                      width: "100%",
+                      padding: "12px 16px",
+                      background: "none",
+                      border: "none",
+                      textAlign: "left",
+                      fontSize: "15px",
+                      cursor: "pointer",
+                      color: "#222",
+                    }}
+                  >
+                    Rename
+                  </button>
+                  {trip.ownerId === user.uid && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(trip);
+                      }}
+                      style={{
+                        display: "block",
+                        width: "100%",
+                        padding: "12px 16px",
+                        background: "none",
+                        border: "none",
+                        textAlign: "left",
+                        fontSize: "15px",
+                        cursor: "pointer",
+                        color: "#e53935",
+                      }}
+                    >
+                      Delete
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           ))
         )}
@@ -122,6 +243,9 @@ export default function TripList() {
 
       {showNewTrip && user && (
         <NewTripModal user={user} onClose={() => setShowNewTrip(false)} />
+      )}
+      {renameTrip && (
+        <RenameTripModal trip={renameTrip} onClose={() => setRenameTrip(null)} />
       )}
     </div>
   );
