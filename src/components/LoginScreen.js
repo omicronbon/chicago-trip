@@ -1,6 +1,6 @@
 import React from "react";
 import { auth, googleProvider } from "../firebase";
-import { signInWithPopup } from "firebase/auth";
+import { signInWithRedirect } from "firebase/auth";
 
 function LoginScreen() {
   const [loading, setLoading] = React.useState(false);
@@ -11,7 +11,7 @@ function LoginScreen() {
     setLoading(true);
     setError(null);
     try {
-      await signInWithPopup(auth, googleProvider);
+      await signInWithRedirect(auth, googleProvider);
       // App.js detects the auth state change and shows the app
     } catch (err) {
       console.error("Login failed:", err);

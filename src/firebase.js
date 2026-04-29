@@ -4,7 +4,7 @@
 
 import { initializeApp } from "firebase/app";
 import { initializeFirestore, persistentLocalCache } from "firebase/firestore";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, getRedirectResult } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -28,3 +28,9 @@ const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
 export { db, auth, googleProvider };
+
+// Handle return from signInWithRedirect on app boot.
+// Firebase buffers the result; onAuthStateChanged in components fires after this resolves.
+getRedirectResult(auth).catch((err) => {
+  console.error("getRedirectResult error:", err);
+});
