@@ -17,14 +17,6 @@ const CATEGORY_COLORS = {
   "Free Time": "#9E9E9E",
 };
 
-const DAY_FILTERS = [
-  { label: "All", value: "all" },
-  { label: "Fri", value: "fri" },
-  { label: "Sat", value: "sat" },
-  { label: "Sun", value: "sun" },
-  { label: "Mon", value: "mon" },
-];
-
 function formatTime(time) {
   if (!time) return "";
   const [h, m] = time.split(":").map(Number);
@@ -42,11 +34,6 @@ function formatDayShort(dateStr) {
   return `${weekday} ${month}/${day}`;
 }
 
-function getDayFilter(dayLabel) {
-  if (!dayLabel) return "all";
-  return dayLabel.toLowerCase().slice(0, 3);
-}
-
 function MapPanner({ selectedActivity }) {
   const map = useMap();
   useEffect(() => {
@@ -57,14 +44,31 @@ function MapPanner({ selectedActivity }) {
   return null;
 }
 
+function InitialFit({ hotel, activities }) {
+  const map = useMap();
+  const fittedRef = useRef(false);
+  useEffect(() => {
+    if (!map || fittedRef.current) return;
+    const points = [];
+    if (hotel) points.push({ lat: hotel.lat, lng: hotel.lng });
+    activities.forEach((a) => points.push({ lat: a.lat, lng: a.lng }));
+    if (points.length === 0) return;
+    fittedRef.current = true;
+    if (points.length === 1) {
+      map.panTo(points[0]);
+      map.setZoom(13);
+      return;
+    }
+    const bounds = new window.google.maps.LatLngBounds();
+    points.forEach((p) => bounds.extend(p));
+    map.fitBounds(bounds, 50);
+  }, [map, hotel, activities]);
+  return null;
+}
+
 function MapView({ activities, days, hotel, onSaveHotel }) {
-  const [activeFilter, setActiveFilter] = useState(() => {
-    const today = new Date();
-    const todayInt = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
-    if (todayInt < 20260417) return "fri";
-    if (todayInt > 20260420) return "all";
-    return { 17: "fri", 18: "sat", 19: "sun", 20: "mon" }[today.getDate()] || "all";
-  });
+  const [activeFilter, setActiveFilter] = useState("all");
+  const filterInitializedRef = useRef(false);
   const [selectedId, setSelectedId] = useState(null);
   const [hotelInfoOpen, setHotelInfoOpen] = useState(false);
   const cardStripRef = useRef(null);
@@ -81,6 +85,28 @@ function MapView({ activities, days, hotel, onSaveHotel }) {
   const hotelDebounceRef = useRef(null);
   const hotelAddressWrapperRef = useRef(null);
   const hotelSuggestionsListRef = useRef(null);
+
+  useEffect(() => {
+    if (filterInitializedRef.current || days.length === 0) return;
+    filterInitializedRef.current = true;
+    const today = new Date();
+    const todayISO = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    const todayDay = days.find((d) => d.date === todayISO);
+    if (todayDay) {
+      setActiveFilter(todayDay.id);
+      return;
+    }
+    const firstDay = days[0];
+    if (firstDay && firstDay.date > todayISO) {
+      setActiveFilter(firstDay.id);
+    }
+    // Otherwise leave as "all" (trip is in the past)
+  }, [days]);
+
+  const dayFilters = useMemo(() => [
+    { label: "All", value: "all" },
+    ...days.map((d) => ({ label: d.label, value: d.id })),
+  ], [days]);
 
   function openHotelModal() {
     setHotelName(hotel?.name || "");
@@ -186,7 +212,7 @@ function MapView({ activities, days, hotel, onSaveHotel }) {
 
   const filteredActivities = useMemo(() => {
     if (activeFilter === "all") return mappedActivities;
-    return mappedActivities.filter((a) => getDayFilter(a.dayLabel) === activeFilter);
+    return mappedActivities.filter((a) => a.dayId === activeFilter);
   }, [mappedActivities, activeFilter]);
 
   const selectedActivity = filteredActivities.find((a) => a.id === selectedId) || null;
@@ -224,7 +250,7 @@ function MapView({ activities, days, hotel, onSaveHotel }) {
       <div className="map-wrapper">
         <div className="map-filter-bar">
           <div className="map-filter-pills">
-            {DAY_FILTERS.map((f) => (
+            {dayFilters.map((f) => (
               <button
                 key={f.value}
                 type="button"
@@ -247,13 +273,14 @@ function MapView({ activities, days, hotel, onSaveHotel }) {
         <div className="map-container">
           <APIProvider apiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}>
             <Map
-              defaultCenter={{ lat: 41.8827, lng: -87.6233 }}
-              defaultZoom={12}
+              defaultCenter={{ lat: 39.5, lng: -98.35 }}
+              defaultZoom={4}
               mapId="trip-map"
               gestureHandling="greedy"
               style={{ width: "100%", height: "100%" }}
             >
               <MapPanner selectedActivity={selectedActivity} />
+              <InitialFit hotel={hotel} activities={mappedActivities} />
 
               {/* Hotel pin — always visible, ignores day filter */}
               {hotel && (

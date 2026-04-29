@@ -83,9 +83,12 @@ export default function TripList() {
 
   async function handleDelete(trip) {
     if (!window.confirm(`Delete "${trip.name}" and all its data? This cannot be undone.`)) return;
+    const previous = trips;
+    setTrips((t) => t.filter((tr) => tr.id !== trip.id));
     try {
       await deleteTripWithCascade(trip.id);
     } catch (err) {
+      setTrips(previous);
       alert(`Delete failed: ${err.message}`);
     }
     setOpenMenuId(null);
