@@ -9,8 +9,7 @@ import {
   doc,
   serverTimestamp,
 } from "firebase/firestore";
-
-const TRIP_ID = "chicago-april-2026";
+import { useTripId } from "../TripContext";
 
 const CATEGORIES = [
   { value: "Food & Drinks", label: "Food & Drinks" },
@@ -27,6 +26,7 @@ export default function ExpenseModal({
   tripMembers = [],
   currentUser,
 }) {
+  const tripId = useTripId();
   const isEditing = !!expense;
 
   const [description, setDescription] = useState("");
@@ -63,12 +63,12 @@ export default function ExpenseModal({
 
     try {
       if (isEditing) {
-        await updateDoc(doc(db, "trips", TRIP_ID, "expenses", expense.id), {
+        await updateDoc(doc(db, "trips", tripId, "expenses", expense.id), {
           ...data,
           updatedAt: serverTimestamp(),
         });
       } else {
-        await addDoc(collection(db, "trips", TRIP_ID, "expenses"), {
+        await addDoc(collection(db, "trips", tripId, "expenses"), {
           ...data,
           createdBy: currentUser?.uid,
           createdAt: serverTimestamp(),
@@ -84,7 +84,7 @@ export default function ExpenseModal({
 
   async function handleDelete() {
     if (!window.confirm("Delete this expense?")) return;
-    await deleteDoc(doc(db, "trips", TRIP_ID, "expenses", expense.id));
+    await deleteDoc(doc(db, "trips", tripId, "expenses", expense.id));
     onClose();
   }
 

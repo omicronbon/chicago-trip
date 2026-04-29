@@ -7,6 +7,7 @@ import { doc, setDoc, collection } from "firebase/firestore";
 import chicagoItinerary from "./data/chicagoItinerary";
 
 export async function seedTrip() {
+  // One-off seed script. Standalone constant — not wired to TripContext.
   const tripId = "chicago-april-2026";
 
   // Create the trip document

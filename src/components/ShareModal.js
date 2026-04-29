@@ -13,10 +13,10 @@ import {
   getDoc,
   onSnapshot,
 } from "firebase/firestore";
-
-const TRIP_ID = "chicago-april-2026";
+import { useTripId } from "../TripContext";
 
 export default function ShareModal({ onClose, currentUserId }) {
+  const tripId = useTripId();
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState(null);
   const [collaborators, setCollaborators] = useState([]);
@@ -24,7 +24,7 @@ export default function ShareModal({ onClose, currentUserId }) {
 
   // Listen to the trip doc to keep sharedWith in sync
   useEffect(() => {
-    const unsubscribe = onSnapshot(doc(db, "trips", TRIP_ID), async (tripSnap) => {
+    const unsubscribe = onSnapshot(doc(db, "trips", tripId), async (tripSnap) => {
       const data = tripSnap.data();
       const sharedUids = data?.sharedWith || [];
 
@@ -73,7 +73,7 @@ export default function ShareModal({ onClose, currentUserId }) {
       }
 
       // Add to sharedWith
-      await updateDoc(doc(db, "trips", TRIP_ID), {
+      await updateDoc(doc(db, "trips", tripId), {
         sharedWith: arrayUnion(foundUid),
       });
 
@@ -88,7 +88,7 @@ export default function ShareModal({ onClose, currentUserId }) {
   }
 
   async function handleRemove(uid) {
-    await updateDoc(doc(db, "trips", TRIP_ID), {
+    await updateDoc(doc(db, "trips", tripId), {
       sharedWith: arrayRemove(uid),
     });
   }

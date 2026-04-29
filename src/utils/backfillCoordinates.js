@@ -8,8 +8,6 @@ import { db } from "../firebase";
 import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 import { geocodeAddress } from "./geocode";
 
-const TRIP_ID = "chicago-april-2026";
-
 // Manual fallbacks for venues Nominatim might not find precisely.
 // Matched by checking if any key appears in the activity title (case-insensitive).
 const FALLBACK_COORDS = {
@@ -51,10 +49,10 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export async function backfillCoordinates() {
+export async function backfillCoordinates(tripId) {
   console.log("Starting coordinate backfill...");
 
-  const daysSnap = await getDocs(collection(db, "trips", TRIP_ID, "days"));
+  const daysSnap = await getDocs(collection(db, "trips", tripId, "days"));
   const days = daysSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
 
   let total = 0;
@@ -64,7 +62,7 @@ export async function backfillCoordinates() {
 
   for (const day of days) {
     const activitiesSnap = await getDocs(
-      collection(db, "trips", TRIP_ID, "days", day.id, "activities")
+      collection(db, "trips", tripId, "days", day.id, "activities")
     );
 
     for (const actDoc of activitiesSnap.docs) {
@@ -100,7 +98,7 @@ export async function backfillCoordinates() {
 
       if (coords) {
         await updateDoc(
-          doc(db, "trips", TRIP_ID, "days", day.id, "activities", actDoc.id),
+          doc(db, "trips", tripId, "days", day.id, "activities", actDoc.id),
           { lat: coords.lat, lng: coords.lng }
         );
         console.log(`    → saved ${coords.lat}, ${coords.lng}`);

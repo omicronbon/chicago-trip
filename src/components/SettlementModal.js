@@ -9,8 +9,7 @@ import {
   doc,
   serverTimestamp,
 } from "firebase/firestore";
-
-const TRIP_ID = "chicago-april-2026";
+import { useTripId } from "../TripContext";
 
 export default function SettlementModal({
   settlement,
@@ -19,6 +18,7 @@ export default function SettlementModal({
   currentUser,
   prefill,
 }) {
+  const tripId = useTripId();
   const isEditing = !!settlement;
 
   const [fromUid, setFromUid] = useState("");
@@ -65,12 +65,12 @@ export default function SettlementModal({
 
     try {
       if (isEditing) {
-        await updateDoc(doc(db, "trips", TRIP_ID, "settlements", settlement.id), {
+        await updateDoc(doc(db, "trips", tripId, "settlements", settlement.id), {
           ...data,
           updatedAt: serverTimestamp(),
         });
       } else {
-        await addDoc(collection(db, "trips", TRIP_ID, "settlements"), {
+        await addDoc(collection(db, "trips", tripId, "settlements"), {
           ...data,
           createdBy: currentUser?.uid,
           createdAt: serverTimestamp(),
@@ -85,7 +85,7 @@ export default function SettlementModal({
 
   async function handleDelete() {
     if (!window.confirm("Delete this payment record?")) return;
-    await deleteDoc(doc(db, "trips", TRIP_ID, "settlements", settlement.id));
+    await deleteDoc(doc(db, "trips", tripId, "settlements", settlement.id));
     onClose();
   }
 

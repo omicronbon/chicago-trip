@@ -12,10 +12,10 @@ import {
   doc,
   serverTimestamp,
 } from "firebase/firestore";
-
-const TRIP_ID = "chicago-april-2026";
+import { useTripId } from "../TripContext";
 
 export default function ActionItems({ userId, days }) {
+  const tripId = useTripId();
   const [items, setItems] = useState([]);
   const [overflow, setOverflow] = useState([]);
   const [newTitle, setNewTitle] = useState("");
@@ -27,7 +27,7 @@ export default function ActionItems({ userId, days }) {
 
   useEffect(() => {
     const q = query(
-      collection(db, "trips", TRIP_ID, "actionItems"),
+      collection(db, "trips", tripId, "actionItems"),
       orderBy("createdAt")
     );
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -38,7 +38,7 @@ export default function ActionItems({ userId, days }) {
 
   useEffect(() => {
     const unsubscribe = onSnapshot(
-      collection(db, "trips", TRIP_ID, "overflow"),
+      collection(db, "trips", tripId, "overflow"),
       (snapshot) => {
         setOverflow(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })));
       }
@@ -49,7 +49,7 @@ export default function ActionItems({ userId, days }) {
   async function handleAdd() {
     const trimmed = newTitle.trim();
     if (!trimmed) return;
-    await addDoc(collection(db, "trips", TRIP_ID, "actionItems"), {
+    await addDoc(collection(db, "trips", tripId, "actionItems"), {
       title: trimmed,
       completed: false,
       createdBy: userId,
@@ -60,20 +60,20 @@ export default function ActionItems({ userId, days }) {
   }
 
   async function handleToggle(item) {
-    await updateDoc(doc(db, "trips", TRIP_ID, "actionItems", item.id), {
+    await updateDoc(doc(db, "trips", tripId, "actionItems", item.id), {
       completed: !item.completed,
       updatedAt: serverTimestamp(),
     });
   }
 
   async function handleDeleteItem(itemId) {
-    await deleteDoc(doc(db, "trips", TRIP_ID, "actionItems", itemId));
+    await deleteDoc(doc(db, "trips", tripId, "actionItems", itemId));
   }
 
   async function handleAddOverflow() {
     const trimmed = newOverflow.trim();
     if (!trimmed) return;
-    await addDoc(collection(db, "trips", TRIP_ID, "overflow"), {
+    await addDoc(collection(db, "trips", tripId, "overflow"), {
       title: trimmed,
       emoji: "📌",
       notes: "",
@@ -82,13 +82,13 @@ export default function ActionItems({ userId, days }) {
   }
 
   async function handleDeleteOverflow(itemId) {
-    await deleteDoc(doc(db, "trips", TRIP_ID, "overflow", itemId));
+    await deleteDoc(doc(db, "trips", tripId, "overflow", itemId));
   }
 
   async function handleSchedule() {
     if (!selectedDayId || !scheduleItem) return;
     await addDoc(
-      collection(db, "trips", TRIP_ID, "days", selectedDayId, "activities"),
+      collection(db, "trips", tripId, "days", selectedDayId, "activities"),
       {
         title: scheduleItem.title,
         emoji: scheduleItem.emoji || "📌",

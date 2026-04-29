@@ -26,11 +26,12 @@ import ActionItems from "./components/ActionItems";
 import TimelineView from "./components/TimelineView";
 import MapView from "./components/MapView";
 import BudgetView from "./components/BudgetView";
+import { useTripId } from "./TripContext";
 
-const TRIP_ID = "chicago-april-2026";
 const APP_VERSION = "2.1.0";
 
 function App() {
+  const tripId = useTripId();
   const [days, setDays] = useState([]);
   const [activities, setActivities] = useState([]);
   const [selectedDayId, setSelectedDayId] = useState(null);
@@ -96,7 +97,7 @@ function App() {
   useEffect(() => {
     if (!user) return;
 
-    const unsubscribe = onSnapshot(doc(db, "trips", TRIP_ID), async (snap) => {
+    const unsubscribe = onSnapshot(doc(db, "trips", tripId), async (snap) => {
       const data = snap.data();
       if (!data) return;
 
@@ -130,7 +131,7 @@ function App() {
     if (!user) return;
 
     const daysQuery = query(
-      collection(db, "trips", TRIP_ID, "days"),
+      collection(db, "trips", tripId, "days"),
       orderBy("order")
     );
 
@@ -151,7 +152,7 @@ function App() {
     if (!user || !selectedDayId) return;
 
     const activitiesQuery = query(
-      collection(db, "trips", TRIP_ID, "days", selectedDayId, "activities"),
+      collection(db, "trips", tripId, "days", selectedDayId, "activities"),
       orderBy("time")
     );
 
@@ -168,7 +169,7 @@ function App() {
 
     const unsubscribes = days.map((day) => {
       const q = query(
-        collection(db, "trips", TRIP_ID, "days", day.id, "activities"),
+        collection(db, "trips", tripId, "days", day.id, "activities"),
         orderBy("time")
       );
       return onSnapshot(q, (snapshot) => {
@@ -184,7 +185,7 @@ function App() {
   useEffect(() => {
     if (!user) return;
     const q = query(
-      collection(db, "trips", TRIP_ID, "expenses"),
+      collection(db, "trips", tripId, "expenses"),
       orderBy("date", "desc")
     );
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -197,7 +198,7 @@ function App() {
   useEffect(() => {
     if (!user) return;
     const q = query(
-      collection(db, "trips", TRIP_ID, "settlements"),
+      collection(db, "trips", tripId, "settlements"),
       orderBy("date", "desc")
     );
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -214,7 +215,7 @@ function App() {
     await Promise.all(
       idsToToggle.map((id) => {
         const activityDoc = doc(
-          db, "trips", TRIP_ID, "days", selectedDayId, "activities", id
+          db, "trips", tripId, "days", selectedDayId, "activities", id
         );
         return updateDoc(activityDoc, { completed: newStatus });
       })
@@ -224,7 +225,7 @@ function App() {
   async function handleSave(formData) {
     if (modalState === "add") {
       const activitiesRef = collection(
-        db, "trips", TRIP_ID, "days", selectedDayId, "activities"
+        db, "trips", tripId, "days", selectedDayId, "activities"
       );
       await addDoc(activitiesRef, {
         ...formData,
@@ -235,7 +236,7 @@ function App() {
       });
     } else {
       const activityDoc = doc(
-        db, "trips", TRIP_ID, "days", selectedDayId, "activities", modalState.id
+        db, "trips", tripId, "days", selectedDayId, "activities", modalState.id
       );
       await updateDoc(activityDoc, {
         ...formData,
@@ -248,7 +249,7 @@ function App() {
   }
 
   async function handleSaveHotel({ name, address, lat, lng }) {
-    await updateDoc(doc(db, "trips", TRIP_ID), {
+    await updateDoc(doc(db, "trips", tripId), {
       hotelName: name,
       hotelAddress: address,
       hotelLat: lat,
@@ -258,7 +259,7 @@ function App() {
 
   async function handleDelete(activityId) {
     const activityDoc = doc(
-      db, "trips", TRIP_ID, "days", selectedDayId, "activities", activityId
+      db, "trips", tripId, "days", selectedDayId, "activities", activityId
     );
     await deleteDoc(activityDoc);
     setModalState(null);
