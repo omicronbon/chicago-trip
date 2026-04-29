@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { TripProvider } from './TripContext';
 import App from './App';
+import TripList from './components/TripList';
 
 function TripRoute() {
   const { tripId } = useParams();
@@ -14,8 +15,9 @@ function TripRoute() {
 export default function AppRoutes() {
   return (
     <Routes>
+      <Route path="/trips" element={<TripList />} />
       <Route path="/trips/:tripId" element={<TripRoute />} />
-      <Route path="*" element={<Navigate to="/trips/chicago-april-2026" replace />} />
+      <Route path="*" element={<Navigate to="/trips" replace />} />
     </Routes>
   );
 }

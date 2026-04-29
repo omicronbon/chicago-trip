@@ -27,11 +27,13 @@ import TimelineView from "./components/TimelineView";
 import MapView from "./components/MapView";
 import BudgetView from "./components/BudgetView";
 import { useTripId } from "./TripContext";
+import { useNavigate } from "react-router-dom";
 
 const APP_VERSION = "2.1.0";
 
 function App() {
   const tripId = useTripId();
+  const navigate = useNavigate();
   const [days, setDays] = useState([]);
   const [activities, setActivities] = useState([]);
   const [selectedDayId, setSelectedDayId] = useState(null);
@@ -49,6 +51,8 @@ function App() {
   const [expenses, setExpenses] = useState([]);
   const [settlements, setSettlements] = useState([]);
   const [swUpdate, setSwUpdate] = useState(null);
+  const [tripName, setTripName] = useState('');
+  const [tripDates, setTripDates] = useState('');
 
   // One-time cache bust when APP_VERSION changes
   useEffect(() => {
@@ -100,6 +104,9 @@ function App() {
     const unsubscribe = onSnapshot(doc(db, "trips", tripId), async (snap) => {
       const data = snap.data();
       if (!data) return;
+
+      setTripName(data.name || '');
+      setTripDates(data.startDate && data.endDate ? `${data.startDate} – ${data.endDate}` : '');
 
       const { hotelName, hotelAddress, hotelLat, hotelLng } = data;
       if (hotelLat != null && hotelLng != null) {
@@ -302,8 +309,8 @@ function App() {
     return (
       <div className="app-container">
         <header className="app-header">
-          <h1>Chicago 🌆</h1>
-          <p className="trip-dates">April 17–20, 2026</p>
+          <h1>{tripName || 'Trip'}</h1>
+          <p className="trip-dates">{tripDates}</p>
         </header>
         <p style={{ textAlign: "center", marginTop: "2rem", color: "#e0e0e0" }}>Loading...</p>
       </div>
@@ -314,8 +321,13 @@ function App() {
     <div className="app-container">
 
       <header className="app-header">
-        <h1>Chicago 🌆</h1>
-        <p className="trip-dates">April 17–20, 2026</p>
+        <h1>{tripName || 'Trip'}</h1>
+        <p className="trip-dates">{tripDates}</p>
+        <div style={{ position: "absolute", top: "16px", left: "16px" }}>
+          <button className="signout-btn" onClick={() => navigate('/trips')}>
+            ← All trips
+          </button>
+        </div>
         <div style={{ position: "absolute", top: "16px", right: "16px", display: "flex", gap: "8px" }}>
           <button className="signout-btn" onClick={() => setShowShareModal(true)}>
             Share
